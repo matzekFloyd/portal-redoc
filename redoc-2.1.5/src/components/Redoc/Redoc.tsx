@@ -14,6 +14,8 @@ import { ApiContentWrap, BackgroundStub, RedocWrap } from './styled.elements';
 
 import { SearchBox } from '../SearchBox/SearchBox';
 import { StoreProvider } from '../StoreBuilder';
+import { ConsoleWrapper } from '../Console/ConsoleWrapper';
+import { Console } from '../Console/Console';
 
 export interface RedocProps {
   store: AppStore;
@@ -42,24 +44,27 @@ export class Redoc extends React.Component<RedocProps> {
         <StoreProvider value={store}>
           <OptionsProvider value={options}>
             <RedocWrap className="redoc-wrap">
-              <StickyResponsiveSidebar menu={menu} className="menu-content">
-                <ApiLogo info={spec.info} />
-                {(!options.disableSearch && (
-                  <SearchBox
-                    search={search!}
-                    marker={marker}
-                    getItemById={menu.getItemById}
-                    onActivate={menu.activateAndScroll}
-                  />
-                )) ||
-                  null}
-                <SideMenu menu={menu} />
-              </StickyResponsiveSidebar>
-              <ApiContentWrap className="api-content">
-                <ApiInfo store={store} />
-                <ContentItems items={menu.items as any} />
-              </ApiContentWrap>
-              <BackgroundStub />
+              <ConsoleWrapper>
+                <Console menu={menu} spec={spec} />
+                <StickyResponsiveSidebar menu={menu} className="menu-content">
+                  <ApiLogo info={spec.info} />
+                  {(!options.disableSearch && (
+                    <SearchBox
+                      search={search!}
+                      marker={marker}
+                      getItemById={menu.getItemById}
+                      onActivate={menu.activateAndScroll}
+                    />
+                  )) ||
+                    null}
+                  <SideMenu menu={menu} />
+                </StickyResponsiveSidebar>
+                <ApiContentWrap className="api-content">
+                  <ApiInfo store={store} />
+                  <ContentItems items={menu.items as any} />
+                </ApiContentWrap>
+                <BackgroundStub />
+              </ConsoleWrapper>
             </RedocWrap>
           </OptionsProvider>
         </StoreProvider>

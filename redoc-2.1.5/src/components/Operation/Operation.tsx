@@ -18,6 +18,7 @@ import { ResponsesList } from '../Responses/ResponsesList';
 import { ResponseSamples } from '../ResponseSamples/ResponseSamples';
 import { SecurityRequirements } from '../SecurityRequirement/SecurityRequirement';
 import { SECTION_ATTR } from '../../services';
+import { ConsoleToggle } from '../Console/ConsoleToggle';
 
 const Description = styled.div`
   margin-bottom: ${({ theme }) => theme.spacing.unit * 6}px;
@@ -60,6 +61,7 @@ export const Operation = observer(({ operation }: OperationProps): JSX.Element =
             <Parameters parameters={operation.parameters} body={operation.requestBody} />
             <ResponsesList responses={operation.responses} />
             <CallbacksList callbacks={operation.callbacks} />
+            <ConsoleToggle operation={!!operation} />
           </MiddlePanel>
           <DarkRightPanel>
             {!options.pathInMiddlePanel && !isWebhook && <Endpoint operation={operation} />}

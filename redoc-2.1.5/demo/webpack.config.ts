@@ -6,9 +6,12 @@ import * as webpack from 'webpack';
 import { webpackIgnore } from '../config/webpack-utils';
 
 const VERSION = JSON.stringify(require('../package.json').version);
+const REVISION = 0;
+/*
 const REVISION = JSON.stringify(
   require('child_process').execSync('git rev-parse --short HEAD').toString().trim(),
 );
+*/
 
 function root(filename) {
   return resolve(__dirname + '/' + filename);

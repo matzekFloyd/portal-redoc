@@ -14,25 +14,25 @@ const defaultTheme: ThemeInterface = {
   colors: {
     tonalOffset: 0.2,
     primary: {
-      main: '#32329f',
+      main: '#3d7bdc',
       light: ({ colors }) => lighten(colors.tonalOffset, colors.primary.main),
       dark: ({ colors }) => darken(colors.tonalOffset, colors.primary.main),
       contrastText: ({ colors }) => readableColor(colors.primary.main),
     },
     success: {
-      main: '#1d8127',
+      main: '#009A75',
       light: ({ colors }) => lighten(colors.tonalOffset * 2, colors.success.main),
       dark: ({ colors }) => darken(colors.tonalOffset, colors.success.main),
       contrastText: ({ colors }) => readableColor(colors.success.main),
     },
     warning: {
-      main: '#ffa500',
+      main: '#FF8522',
       light: ({ colors }) => lighten(colors.tonalOffset, colors.warning.main),
       dark: ({ colors }) => darken(colors.tonalOffset, colors.warning.main),
       contrastText: '#ffffff',
     },
     error: {
-      main: '#d41f1c',
+      main: '#E00031',
       light: ({ colors }) => lighten(colors.tonalOffset, colors.error.main),
       dark: ({ colors }) => darken(colors.tonalOffset, colors.error.main),
       contrastText: ({ colors }) => readableColor(colors.error.main),
@@ -72,12 +72,12 @@ const defaultTheme: ThemeInterface = {
       },
     },
     http: {
-      get: '#2F8132',
-      post: '#186FAF',
+      get: '#009A75',
+      post: '#3d7bdc',
       put: '#95507c',
       options: '#947014',
-      patch: '#bf581d',
-      delete: '#cc3333',
+      patch: '#FF8522',
+      delete: '#E00031',
       basic: '#707070',
       link: '#07818F',
       head: '#A23DAD',
@@ -120,7 +120,7 @@ const defaultTheme: ThemeInterface = {
       fontFamily: 'Courier, monospace',
       lineHeight: ({ typography }) => typography.lineHeight,
       fontWeight: ({ typography }) => typography.fontWeightRegular,
-      color: '#e53935',
+      color: '#E00031',
       backgroundColor: 'rgba(38, 50, 56, 0.05)',
       wrap: false,
     },
@@ -179,7 +179,7 @@ const defaultTheme: ThemeInterface = {
   },
   fab: {
     backgroundColor: '#f2f2f2',
-    color: '#0065FB',
+    color: '#0A1264',
   },
 };
 

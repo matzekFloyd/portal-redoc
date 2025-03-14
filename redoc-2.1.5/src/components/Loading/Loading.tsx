@@ -4,7 +4,7 @@ import styled from '../../styled-components';
 import { Spinner } from './Spinner.svg';
 
 const LoadingMessage = styled.div<{ color: string }>`
-  font-family: helvetica, sans;
+  font-family: helvetica, sans, serif;
   width: 100%;
   text-align: center;
   font-size: 25px;

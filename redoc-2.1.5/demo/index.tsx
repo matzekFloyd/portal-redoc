@@ -5,7 +5,7 @@ import { RedocStandalone } from '../src';
 import ComboBox from './ComboBox';
 import FileInput from './components/FileInput';
 
-const DEFAULT_SPEC = 'museum.yaml';
+const DEFAULT_SPEC = 'eva_openapi.json';
 const NEW_VERSION_PETSTORE = 'openapi-3-1.yaml';
 
 const demos = [
