@@ -9,4 +9,4 @@
 !webpack.config.ts
 
 !package.json
-!package-lock.json
+!_package-lock.json
