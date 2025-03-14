@@ -1,4 +1,6 @@
-import styled, { extensionsHook, media, css } from '../styled-components';
+// import { transparentize } from 'polished';
+
+import styled, { extensionsHook, media } from '../styled-components';
 import { deprecatedCss } from './mixins';
 
 export const PropertiesTableCaption = styled.caption`
@@ -66,32 +68,13 @@ export const PropertyNameCell = styled(PropertyCell)`
   line-height: 20px;
   white-space: nowrap;
   font-size: 13px;
-  font-family: ${props => props.theme.typography.code.fontFamily};
+  font-family: ${(props) => props.theme.typography.code.fontFamily};
 
   &.deprecated {
     ${deprecatedCss};
   }
 
-  ${({ kind }) =>
-    kind === 'patternProperties' &&
-    css`
-      > span.property-name {
-        display: inline-table;
-        white-space: break-spaces;
-        margin-right: 20px;
-
-        ::before,
-        ::after {
-          content: '/';
-          filter: opacity(0.2);
-        }
-      }
-    `}
-
-  ${({ kind = '' }) =>
-    ['field', 'additionalProperties', 'patternProperties'].includes(kind)
-      ? ''
-      : 'font-style: italic'};
+  ${({ kind }) => (kind !== 'field' ? 'font-style: italic' : '')};
 
   ${extensionsHook('PropertyNameCell')};
 `;
@@ -99,7 +82,7 @@ export const PropertyNameCell = styled(PropertyCell)`
 export const PropertyDetailsCell = styled.td`
   border-bottom: 1px solid #9fb4be;
   padding: 10px 0;
-  width: ${props => props.theme.schema.defaultDetailsWidth};
+  width: ${(props) => props.theme.schema.defaultDetailsWidth};
   box-sizing: border-box;
 
   tr.expanded & {
@@ -109,7 +92,7 @@ export const PropertyDetailsCell = styled.td`
   ${media.lessThan('small')`
     padding: 0 20px;
     border-bottom: none;
-    border-left: 1px solid ${props => props.theme.schema.linesColor};
+    border-left: 1px solid ${(props) => props.theme.schema.linesColor};
 
     tr.last > & {
       border-left: none;

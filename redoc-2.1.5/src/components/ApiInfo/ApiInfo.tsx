@@ -14,7 +14,6 @@ import {
   InfoSpanBox,
   InfoSpanBoxWrap,
 } from './styled.elements';
-import { l } from '../../services/Labels';
 
 export interface ApiInfoProps {
   store: AppStore;
@@ -31,7 +30,7 @@ export class ApiInfo extends React.Component<ApiInfoProps> {
   render() {
     const { store } = this.props;
     const { info, externalDocs } = store.spec;
-    const hideDownloadButton = store.options.hideDownloadButton;
+    const hideDownloadButton = true; //store.options.hideDownloadButton;
 
     const downloadFilename = info.downloadFileName;
     const downloadLink = info.downloadLink;
@@ -39,12 +38,7 @@ export class ApiInfo extends React.Component<ApiInfoProps> {
     const license =
       (info.license && (
         <InfoSpan>
-          License:{' '}
-          {info.license.identifier ? (
-            info.license.identifier
-          ) : (
-            <a href={info.license.url}>{info.license.name}</a>
-          )}
+          License: <a href={info.license.url}>{info.license.name}</a>
         </InfoSpan>
       )) ||
       null;
@@ -85,14 +79,14 @@ export class ApiInfo extends React.Component<ApiInfoProps> {
             </ApiHeader>
             {!hideDownloadButton && (
               <p>
-                {l('downloadSpecification')}:
+                Download OpenAPI specification:
                 <DownloadButton
                   download={downloadFilename || true}
                   target="_blank"
                   href={downloadLink}
                   onClick={this.handleDownloadClick}
                 >
-                  {l('download')}
+                  Download
                 </DownloadButton>
               </p>
             )}
@@ -106,7 +100,6 @@ export class ApiInfo extends React.Component<ApiInfoProps> {
               )) ||
                 null}
             </StyledMarkdownBlock>
-            <Markdown source={store.spec.info.summary} data-role="redoc-summary" />
             <Markdown source={store.spec.info.description} data-role="redoc-description" />
             {externalDocs && <ExternalDocumentation externalDocs={externalDocs} />}
           </MiddlePanel>

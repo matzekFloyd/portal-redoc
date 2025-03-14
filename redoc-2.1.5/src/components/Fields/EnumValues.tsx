@@ -8,7 +8,7 @@ import { RedocRawOptions } from '../../services/RedocNormalizedOptions';
 
 export interface EnumValuesProps {
   values: string[];
-  isArrayType: boolean;
+  type: string;
 }
 
 export interface EnumValuesState {
@@ -27,7 +27,7 @@ export class EnumValues extends React.PureComponent<EnumValuesProps, EnumValuesS
   }
 
   render() {
-    const { values, isArrayType } = this.props;
+    const { values, type } = this.props;
     const { collapsed } = this.state;
 
     // TODO: provide context interface in more elegant way
@@ -55,11 +55,11 @@ export class EnumValues extends React.PureComponent<EnumValuesProps, EnumValuesS
     return (
       <div>
         <FieldLabel>
-          {isArrayType ? l('enumArray') : ''}{' '}
+          {type === 'array' ? l('enumArray') : ''}{' '}
           {values.length === 1 ? l('enumSingleValue') : l('enum')}:
         </FieldLabel>{' '}
         {displayedItems.map((value, idx) => {
-          const exampleValue = enumSkipQuotes ? String(value) : JSON.stringify(value);
+          const exampleValue = enumSkipQuotes ? value : JSON.stringify(value);
           return (
             <React.Fragment key={idx}>
               <ExampleValue>{exampleValue}</ExampleValue>{' '}

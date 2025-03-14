@@ -11,4 +11,3 @@ export * from './RedocNormalizedOptions';
 export * from './MenuBuilder';
 export * from './SearchStore';
 export * from './MarkerService';
-export * from './types';

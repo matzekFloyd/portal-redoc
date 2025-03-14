@@ -17,7 +17,15 @@ import { RequestSamples } from '../RequestSamples/RequestSamples';
 import { ResponsesList } from '../Responses/ResponsesList';
 import { ResponseSamples } from '../ResponseSamples/ResponseSamples';
 import { SecurityRequirements } from '../SecurityRequirement/SecurityRequirement';
-import { SECTION_ATTR } from '../../services';
+
+import { ConsoleToggle } from '../Console/ConsoleToggle';
+import { Inject } from '../Inject/Inject';
+
+const OperationRow = styled(Row)`
+  backface-visibility: hidden;
+  contain: content;
+  overflow: hidden;
+`;
 
 const Description = styled.div`
   margin-bottom: ${({ theme }) => theme.spacing.unit * 6}px;
@@ -27,48 +35,50 @@ export interface OperationProps {
   operation: OperationModel;
 }
 
-export const Operation = observer(({ operation }: OperationProps): JSX.Element => {
-  const { name: summary, description, deprecated, externalDocs, isWebhook, httpVerb } = operation;
-  const hasDescription = !!(description || externalDocs);
-  const { showWebhookVerb } = React.useContext(OptionsContext);
-  return (
-    <OptionsContext.Consumer>
-      {options => (
-        <Row {...{ [SECTION_ATTR]: operation.operationHash }} id={operation.operationHash}>
-          <MiddlePanel>
-            <H2>
-              <ShareLink to={operation.id} />
-              {summary} {deprecated && <Badge type="warning"> Deprecated </Badge>}
-              {isWebhook && (
-                <Badge type="primary">
-                  {' '}
-                  Webhook {showWebhookVerb && httpVerb && '| ' + httpVerb.toUpperCase()}
-                </Badge>
+@observer
+export class Operation extends React.Component<OperationProps> {
+  render() {
+    const { operation } = this.props;
+
+    const { name: summary, description, deprecated, externalDocs, isWebhook } = operation;
+    const hasDescription = !!(description || externalDocs);
+
+    return (
+      <OptionsContext.Consumer>
+        {(options) => (
+          <OperationRow>
+            <MiddlePanel>
+              <H2>
+                <ShareLink to={operation.id} />
+                {summary} {deprecated && <Badge type="warning"> Deprecated </Badge>}
+                {isWebhook && <Badge type="primary"> Webhook </Badge>}
+                <Inject hook="wpEdit" data={ operation } />
+              </H2>
+              {options.pathInMiddlePanel && !isWebhook && (
+                <Endpoint operation={operation} inverted={true} />
               )}
-            </H2>
-            {options.pathInMiddlePanel && !isWebhook && (
-              <Endpoint operation={operation} inverted={true} />
-            )}
-            {hasDescription && (
-              <Description>
-                {description !== undefined && <Markdown source={description} />}
-                {externalDocs && <ExternalDocumentation externalDocs={externalDocs} />}
-              </Description>
-            )}
-            <Extensions extensions={operation.extensions} />
-            <SecurityRequirements securities={operation.security} />
-            <Parameters parameters={operation.parameters} body={operation.requestBody} />
-            <ResponsesList responses={operation.responses} />
-            <CallbacksList callbacks={operation.callbacks} />
-          </MiddlePanel>
-          <DarkRightPanel>
-            {!options.pathInMiddlePanel && !isWebhook && <Endpoint operation={operation} />}
-            <RequestSamples operation={operation} />
-            <ResponseSamples operation={operation} />
-            <CallbackSamples callbacks={operation.callbacks} />
-          </DarkRightPanel>
-        </Row>
-      )}
-    </OptionsContext.Consumer>
-  );
-});
+              {hasDescription && (
+                <Description>
+                  {description !== undefined && <Markdown source={description} />}
+                  {externalDocs && <ExternalDocumentation externalDocs={externalDocs} />}
+                </Description>
+              )}
+              <Extensions extensions={operation.extensions} />
+              <SecurityRequirements securities={operation.security} />
+              <Parameters parameters={operation.parameters} body={operation.requestBody} />
+              <ResponsesList responses={operation.responses} />
+              <CallbacksList callbacks={operation.callbacks} />
+              <ConsoleToggle operation={operation}/>
+            </MiddlePanel>
+            <DarkRightPanel>
+              {!options.pathInMiddlePanel && !isWebhook && <Endpoint operation={operation} />}
+              <RequestSamples operation={operation} />
+              <ResponseSamples operation={operation} />
+              <CallbackSamples callbacks={operation.callbacks} />
+            </DarkRightPanel>
+          </OperationRow>
+        )}
+      </OptionsContext.Consumer>
+    );
+  }
+}

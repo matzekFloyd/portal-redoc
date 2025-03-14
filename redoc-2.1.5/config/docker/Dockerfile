@@ -5,7 +5,7 @@
 # npm i -g http-server
 # http-server -p 8000 --cors
 
-FROM node:12-alpine
+FROM node:alpine
 
 RUN apk update && apk add --no-cache git
 
@@ -16,8 +16,7 @@ RUN npm ci --no-optional --ignore-scripts
 
 # copy only required for the build files
 COPY src /build/src
-COPY webpack.config.ts tsconfig.json custom.d.ts  /build/
-COPY config/webpack-utils.ts /build/config/
+COPY webpack.config.ts tsconfig.json custom.d.ts /build/
 COPY typings/styled-patch.d.ts /build/typings/styled-patch.d.ts
 
 RUN npm run bundle:standalone
@@ -26,7 +25,6 @@ FROM nginx:alpine
 
 ENV PAGE_TITLE="ReDoc"
 ENV PAGE_FAVICON="favicon.png"
-ENV BASE_PATH=
 ENV SPEC_URL="http://petstore.swagger.io/v2/swagger.json"
 ENV PORT=80
 ENV REDOC_OPTIONS=

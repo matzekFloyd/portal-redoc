@@ -1,9 +1,9 @@
 import * as CopyWebpackPlugin from 'copy-webpack-plugin';
 import ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 import * as HtmlWebpackPlugin from 'html-webpack-plugin';
+import { compact } from 'lodash';
 import { resolve } from 'path';
 import * as webpack from 'webpack';
-import { webpackIgnore } from '../config/webpack-utils';
 
 const VERSION = JSON.stringify(require('../package.json').version);
 const REVISION = JSON.stringify(
@@ -14,7 +14,39 @@ function root(filename) {
   return resolve(__dirname + '/' + filename);
 }
 
-export default (env: { playground?: boolean; bench?: boolean } = {}) => ({
+const tsLoader = (env) => ({
+  loader: 'ts-loader',
+  options: {
+    compilerOptions: {
+      module: env.bench ? 'esnext' : 'es2015',
+      declaration: false,
+    },
+  },
+});
+
+const babelLoader = () => ({
+  loader: 'babel-loader',
+  options: {
+    generatorOpts: {
+      decoratorsBeforeExport: true,
+    },
+    plugins: compact([
+      ['@babel/plugin-syntax-typescript', { isTSX: true }],
+      ['@babel/plugin-syntax-decorators', { legacy: true }],
+      '@babel/plugin-syntax-dynamic-import',
+      '@babel/plugin-syntax-jsx',
+    ]),
+  },
+});
+
+const babelHotLoader = {
+  loader: 'babel-loader',
+  options: {
+    plugins: ['react-hot-loader/babel'],
+  },
+};
+
+export default (env: { playground?: boolean; bench?: boolean } = {}, { mode }) => ({
   entry: [
     root('../src/polyfills.ts'),
     root(
@@ -25,7 +57,6 @@ export default (env: { playground?: boolean; bench?: boolean } = {}) => ({
         : 'index.tsx',
     ),
   ],
-  target: 'web',
   output: {
     filename: 'redoc-demo.bundle.js',
     path: root('dist'),
@@ -33,24 +64,25 @@ export default (env: { playground?: boolean; bench?: boolean } = {}) => ({
   },
 
   devServer: {
-    static: __dirname,
+    contentBase: __dirname,
+    watchContentBase: true,
     port: 9090,
-    hot: true,
-    historyApiFallback: true,
-    open: true,
+    disableHostCheck: true,
+    stats: 'minimal',
   },
-  stats: {
-    children: true,
-  },
+
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json'],
-    fallback: {
-      path: require.resolve('path-browserify'),
-      buffer: require.resolve('buffer'),
-      http: false,
-      fs: false,
-      os: false,
-    },
+    alias:
+      mode !== 'production'
+        ? {
+            'react-dom': '@hot-loader/react-dom',
+          }
+        : {},
+  },
+
+  node: {
+    fs: 'empty',
   },
 
   performance: false,
@@ -65,28 +97,39 @@ export default (env: { playground?: boolean; bench?: boolean } = {}) => ({
 
   module: {
     rules: [
+      { enforce: 'pre', test: /\.js$/, loader: 'source-map-loader' },
       { test: [/\.eot$/, /\.gif$/, /\.woff$/, /\.svg$/, /\.ttf$/], use: 'null-loader' },
       {
-        test: /\.(tsx?|[cm]?js)$/,
-        loader: 'esbuild-loader',
-        options: {
-          target: 'es2015',
-          tsconfigRaw: require('../tsconfig.json'),
-        },
+        test: /\.tsx?$/,
+        use: compact([
+          mode !== 'production' ? babelHotLoader : undefined,
+          tsLoader(env),
+          babelLoader(),
+        ]),
         exclude: [/node_modules/],
       },
       {
         test: /\.css$/,
-        use: [
-          'style-loader',
-          'css-loader',
-          {
-            loader: 'esbuild-loader',
-            options: {
-              minify: true,
+        use: {
+          loader: 'css-loader',
+          options: {
+            sourceMap: true,
+          },
+        },
+      },
+      {
+        test: /node_modules\/(swagger2openapi|reftools|oas-resolver|oas-kit-common|oas-schema-walker)\/.*\.js$/,
+        use: {
+          loader: 'ts-loader',
+          options: {
+            transpileOnly: true,
+            instance: 'ts2js-transpiler-only',
+            compilerOptions: {
+              allowJs: true,
+              declaration: false,
             },
           },
-        ],
+        },
       },
     ],
   },
@@ -94,12 +137,9 @@ export default (env: { playground?: boolean; bench?: boolean } = {}) => ({
     new webpack.DefinePlugin({
       __REDOC_VERSION__: VERSION,
       __REDOC_REVISION__: REVISION,
-      'process.env': '{}',
-      'process.platform': '"browser"',
-      'process.stdout': 'null',
     }),
-    // new webpack.NamedModulesPlugin(),
-    // new webpack.optimize.ModuleConcatenationPlugin(),
+    new webpack.NamedModulesPlugin(),
+    new webpack.optimize.ModuleConcatenationPlugin(),
     new HtmlWebpackPlugin({
       template: env.playground
         ? 'demo/playground/index.html'
@@ -107,15 +147,16 @@ export default (env: { playground?: boolean; bench?: boolean } = {}) => ({
         ? 'benchmark/index.html'
         : 'demo/index.html',
     }),
-    new webpack.ProvidePlugin({
-      Buffer: ['buffer', 'Buffer'],
-    }),
-    new ForkTsCheckerWebpackPlugin({ logger: { infrastructure: 'silent', issues: 'console' } }),
-    webpackIgnore(/js-yaml\/dumper\.js$/),
-    webpackIgnore(/json-schema-ref-parser\/lib\/dereference\.js/),
-    webpackIgnore(/^\.\/SearchWorker\.worker$/),
+    new ForkTsCheckerWebpackPlugin(),
+    ignore(/js-yaml\/dumper\.js$/),
+    ignore(/json-schema-ref-parser\/lib\/dereference\.js/),
+    ignore(/^\.\/SearchWorker\.worker$/),
     new CopyWebpackPlugin({
-      patterns: ['demo/museum.yaml'],
+      patterns: ['demo/openapi.yaml'],
     }),
   ],
 });
+
+function ignore(regexp) {
+  return new webpack.NormalModuleReplacementPlugin(regexp, require.resolve('lodash/noop.js'));
+}

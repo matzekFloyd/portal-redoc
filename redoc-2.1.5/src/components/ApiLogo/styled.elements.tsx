@@ -17,5 +17,4 @@ const Link = styled.a`
   display: inline-block;
 `;
 
-// eslint-disable-next-line react/display-name
 export const LinkWrap = url => Component => <Link href={url}>{Component}</Link>;

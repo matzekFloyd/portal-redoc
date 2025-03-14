@@ -1,13 +1,12 @@
 import { Lambda, observe } from 'mobx';
 
-import type { OpenAPISpec } from '../types';
+import { OpenAPISpec } from '../types';
 import { loadAndBundleSpec } from '../utils/loadAndBundleSpec';
 import { history } from './HistoryService';
 import { MarkerService } from './MarkerService';
 import { MenuStore } from './MenuStore';
 import { SpecStore } from './models';
-import { RedocNormalizedOptions } from './RedocNormalizedOptions';
-import type { RedocRawOptions } from './RedocNormalizedOptions';
+import { RedocNormalizedOptions, RedocRawOptions } from './RedocNormalizedOptions';
 import { ScrollService } from './ScrollService';
 import { SearchStore } from './SearchStore';
 
@@ -15,12 +14,23 @@ import { SchemaDefinition } from '../components/SchemaDefinition/SchemaDefinitio
 import { SecurityDefs } from '../components/SecuritySchemes/SecuritySchemes';
 import {
   SCHEMA_DEFINITION_JSX_NAME,
+  SECURITY_DEFINITIONS_COMPONENT_NAME,
   SECURITY_DEFINITIONS_JSX_NAME,
-  OLD_SECURITY_DEFINITIONS_JSX_NAME,
 } from '../utils/openapi';
 
 import { IS_BROWSER } from '../utils';
-import type { StoreState } from './types';
+
+export interface StoreState {
+  menu: {
+    activeItemIdx: number;
+  };
+  spec: {
+    url?: string;
+    data: any;
+  };
+  searchIndex: any;
+  options: RedocRawOptions;
+}
 
 export async function createStore(
   spec: object,
@@ -63,6 +73,12 @@ export class AppStore {
     options: RedocRawOptions = {},
     createSearchIndex: boolean = true,
   ) {
+
+    // TODO: Find proper place to add this (anything before this breaks because of custom standalone build)
+    options.scrollYOffset = () => {
+      return document.querySelector('.globalheader')?.clientHeight || 0;
+    };
+
     this.rawOptions = options;
     this.options = new RedocNormalizedOptions(options, DEFAULT_OPTIONS);
     this.scroll = new ScrollService(this.options);
@@ -135,10 +151,7 @@ export class AppStore {
 
     if (idx === -1 && IS_BROWSER) {
       const $description = document.querySelector('[data-role="redoc-description"]');
-      const $summary = document.querySelector('[data-role="redoc-summary"]');
-
       if ($description) elements.push($description);
-      if ($summary) elements.push($summary);
     }
 
     this.marker.addOnly(elements);
@@ -148,13 +161,13 @@ export class AppStore {
 
 const DEFAULT_OPTIONS: RedocRawOptions = {
   allowedMdComponents: {
-    [SECURITY_DEFINITIONS_JSX_NAME]: {
+    [SECURITY_DEFINITIONS_COMPONENT_NAME]: {
       component: SecurityDefs,
       propsSelector: (store: AppStore) => ({
         securitySchemes: store.spec.securitySchemes,
       }),
     },
-    [OLD_SECURITY_DEFINITIONS_JSX_NAME]: {
+    [SECURITY_DEFINITIONS_JSX_NAME]: {
       component: SecurityDefs,
       propsSelector: (store: AppStore) => ({
         securitySchemes: store.spec.securitySchemes,

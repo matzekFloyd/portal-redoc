@@ -1,116 +1,88 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Models Schema should correct resolve double $ref if no need sibling 1`] = `
-{
-  "refsStack": [
-    "#/components/schemas/Parent",
-  ],
-  "resolved": {
-    "properties": {
-      "test": {
-        "type": "string",
-      },
-    },
-    "type": "object",
-  },
-}
-`;
-
 exports[`Models Schema should hoist oneOfs when mergin allOf 1`] = `
-{
-  "oneOf": [
-    {
-      "allOf": [
-        {
-          "properties": {
-            "username": {
+Object {
+  "oneOf": Array [
+    Object {
+      "oneOf": Array [
+        Object {
+          "allOf": undefined,
+          "parentRefs": Array [],
+          "properties": Object {
+            "extra": Object {
+              "type": "string",
+            },
+            "password": Object {
+              "description": "The user's password",
+              "type": "string",
+            },
+            "username": Object {
               "description": "The user's name",
               "type": "string",
             },
           },
+          "title": undefined,
         },
-        {
-          "properties": {
-            "extra": {
+        Object {
+          "allOf": undefined,
+          "parentRefs": Array [],
+          "properties": Object {
+            "extra": Object {
+              "type": "string",
+            },
+            "mobile": Object {
+              "description": "The user's mobile",
+              "type": "string",
+            },
+            "username": Object {
+              "description": "The user's name",
               "type": "string",
             },
           },
-        },
-        {
-          "oneOf": [
-            {
-              "properties": {
-                "password": {
-                  "description": "The user's password",
-                  "type": "string",
-                },
-              },
-            },
-            {
-              "properties": {
-                "mobile": {
-                  "description": "The user's mobile",
-                  "type": "string",
-                },
-              },
-            },
-          ],
+          "title": undefined,
         },
       ],
-      "x-refsStack": undefined,
     },
-    {
-      "allOf": [
-        {
-          "properties": {
-            "email": {
+    Object {
+      "oneOf": Array [
+        Object {
+          "allOf": undefined,
+          "parentRefs": Array [],
+          "properties": Object {
+            "email": Object {
               "description": "The user's email",
               "type": "string",
             },
-          },
-        },
-        {
-          "properties": {
-            "extra": {
+            "extra": Object {
+              "type": "string",
+            },
+            "password": Object {
+              "description": "The user's password",
               "type": "string",
             },
           },
+          "title": undefined,
         },
-        {
-          "oneOf": [
-            {
-              "properties": {
-                "password": {
-                  "description": "The user's password",
-                  "type": "string",
-                },
-              },
+        Object {
+          "allOf": undefined,
+          "parentRefs": Array [],
+          "properties": Object {
+            "email": Object {
+              "description": "The user's email",
+              "type": "string",
             },
-            {
-              "properties": {
-                "mobile": {
-                  "description": "The user's mobile",
-                  "type": "string",
-                },
-              },
+            "extra": Object {
+              "type": "string",
             },
-          ],
+            "mobile": Object {
+              "description": "The user's mobile",
+              "type": "string",
+            },
+          },
+          "title": undefined,
         },
       ],
-      "x-refsStack": undefined,
     },
   ],
-}
-`;
-
-exports[`Models Schema should override description from $ref of the referenced component, when sibling description exists  1`] = `
-{
-  "refsStack": [
-    "#/components/schemas/Test",
-  ],
-  "resolved": {
-    "description": "Overriden description",
-    "type": "object",
-  },
 }
 `;

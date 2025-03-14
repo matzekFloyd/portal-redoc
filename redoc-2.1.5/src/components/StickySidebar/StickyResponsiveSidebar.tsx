@@ -25,7 +25,7 @@ export interface StickySidebarState {
 
 const stickyfill = Stickyfill && Stickyfill();
 
-const StyledStickySidebar = styled.div<{ $open?: boolean }>`
+const StyledStickySidebar = styled.div<{ open?: boolean }>`
   width: ${props => props.theme.sidebar.width};
   background-color: ${props => props.theme.sidebar.backgroundColor};
   overflow: hidden;
@@ -45,7 +45,7 @@ const StyledStickySidebar = styled.div<{ $open?: boolean }>`
     z-index: 20;
     width: 100%;
     background: ${({ theme }) => theme.sidebar.backgroundColor};
-    display: ${props => (props.$open ? 'flex' : 'none')};
+    display: ${props => (props.open ? 'flex' : 'none')};
   `};
 
   @media print {
@@ -56,7 +56,7 @@ const StyledStickySidebar = styled.div<{ $open?: boolean }>`
 const FloatingButton = styled.div`
   outline: none;
   user-select: none;
-  background-color: ${({ theme }) => theme.fab.backgroundColor};
+  background-color: #f2f2f2;
   color: ${props => props.theme.colors.primary.main};
   display: none;
   cursor: pointer;
@@ -74,9 +74,6 @@ const FloatingButton = styled.div`
   width: 60px;
   height: 60px;
   padding: 0 20px;
-  svg {
-    color: ${({ theme }) => theme.fab.color};
-  }
 
   @media print {
     display: none;
@@ -85,7 +82,7 @@ const FloatingButton = styled.div`
 
 @observer
 export class StickyResponsiveSidebar extends React.Component<
-  React.PropsWithChildren<StickySidebarProps>,
+  StickySidebarProps,
   StickySidebarState
 > {
   static contextType = OptionsContext;
@@ -130,8 +127,9 @@ export class StickyResponsiveSidebar extends React.Component<
     return (
       <>
         <StyledStickySidebar
-          $open={open}
+          open={open}
           className={this.props.className}
+          // Overwritten from our CSS (variable), since native ReDoc "scrollYOffset" option is not so great
           style={{
             top,
             height: `calc(100vh - ${top})`,
@@ -143,11 +141,9 @@ export class StickyResponsiveSidebar extends React.Component<
         >
           {this.props.children}
         </StyledStickySidebar>
-        {!this.context.hideFab && (
-          <FloatingButton onClick={this.toggleNavMenu}>
-            <AnimatedChevronButton open={open} />
-          </FloatingButton>
-        )}
+        <FloatingButton onClick={this.toggleNavMenu}>
+          <AnimatedChevronButton open={open} />
+        </FloatingButton>
       </>
     );
   }

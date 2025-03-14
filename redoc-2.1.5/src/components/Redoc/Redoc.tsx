@@ -14,6 +14,8 @@ import { ApiContentWrap, BackgroundStub, RedocWrap } from './styled.elements';
 
 import { SearchBox } from '../SearchBox/SearchBox';
 import { StoreProvider } from '../StoreBuilder';
+import {Console} from "../Console/Console";
+import {ConsoleWrapper} from "../Console/ConsoleWrapper";
 
 export interface RedocProps {
   store: AppStore;
@@ -39,9 +41,11 @@ export class Redoc extends React.Component<RedocProps> {
     const store = this.props.store;
     return (
       <ThemeProvider theme={options.theme}>
-        <StoreProvider value={store}>
+        <StoreProvider value={this.props.store}>
           <OptionsProvider value={options}>
             <RedocWrap className="redoc-wrap">
+              <ConsoleWrapper>
+                <Console menu={menu}/>
               <StickyResponsiveSidebar menu={menu} className="menu-content">
                 <ApiLogo info={spec.info} />
                 {(!options.disableSearch && (
@@ -56,10 +60,11 @@ export class Redoc extends React.Component<RedocProps> {
                 <SideMenu menu={menu} />
               </StickyResponsiveSidebar>
               <ApiContentWrap className="api-content">
-                <ApiInfo store={store} />
-                <ContentItems items={menu.items as any} />
+                  <ApiInfo store={store}/>
+                  <ContentItems items={menu.items as any}/>
               </ApiContentWrap>
               <BackgroundStub />
+              </ConsoleWrapper>
             </RedocWrap>
           </OptionsProvider>
         </StoreProvider>

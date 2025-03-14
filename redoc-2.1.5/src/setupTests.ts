@@ -1,9 +1,5 @@
 import * as Enzyme from 'enzyme';
-import Adapter from '@cfaester/enzyme-adapter-react-18';
-import { TextEncoder, TextDecoder } from 'util';
-
-Object.assign(global, { TextDecoder, TextEncoder });
-
+import * as Adapter from 'enzyme-adapter-react-16';
 import 'raf/polyfill';
 
 Enzyme.configure({ adapter: new Adapter() });

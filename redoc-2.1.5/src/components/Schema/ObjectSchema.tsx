@@ -18,38 +18,37 @@ export interface ObjectSchemaProps extends SchemaProps {
   };
 }
 
-export const ObjectSchema = observer(
-  ({
-    schema: { fields = [], title },
-    showTitle,
-    discriminator,
-    skipReadOnly,
-    skipWriteOnly,
-    level,
-  }: ObjectSchemaProps) => {
-    const { expandSingleSchemaField, showObjectSchemaExamples, schemaExpansionLevel } =
-      React.useContext(OptionsContext);
+@observer
+export class ObjectSchema extends React.Component<ObjectSchemaProps> {
+  static contextType = OptionsContext;
 
-    const filteredFields = React.useMemo(
-      () =>
-        skipReadOnly || skipWriteOnly
-          ? fields.filter(
-              item =>
-                !(
-                  (skipReadOnly && item.schema.readOnly) ||
-                  (skipWriteOnly && item.schema.writeOnly)
-                ),
-            )
-          : fields,
-      [skipReadOnly, skipWriteOnly, fields],
-    );
+  get parentSchema() {
+    return this.props.discriminator!.parentSchema;
+  }
 
-    const expandByDefault =
-      (expandSingleSchemaField && filteredFields.length === 1) || schemaExpansionLevel >= level!;
+  render() {
+    const {
+      schema: { fields = [] },
+      showTitle,
+      discriminator,
+    } = this.props;
+
+    const needFilter = this.props.skipReadOnly || this.props.skipWriteOnly;
+
+    const filteredFields = needFilter
+      ? fields.filter(item => {
+          return !(
+            (this.props.skipReadOnly && item.schema.readOnly) ||
+            (this.props.skipWriteOnly && item.schema.writeOnly)
+          );
+        })
+      : fields;
+
+    const expandByDefault = this.context.expandSingleSchemaField && filteredFields.length === 1;
 
     return (
       <PropertiesTable>
-        {showTitle && <PropertiesTableCaption>{title}</PropertiesTableCaption>}
+        {showTitle && <PropertiesTableCaption>{this.props.schema.title}</PropertiesTableCaption>}
         <tbody>
           {mapWithLast(filteredFields, (field, isLast) => {
             return (
@@ -59,26 +58,26 @@ export const ObjectSchema = observer(
                 field={field}
                 expandByDefault={expandByDefault}
                 renderDiscriminatorSwitch={
-                  discriminator?.fieldName === field.name
-                    ? () => (
-                        <DiscriminatorDropdown
-                          parent={discriminator!.parentSchema}
-                          enumValues={field.schema.enum}
-                        />
-                      )
-                    : undefined
+                  (discriminator &&
+                    discriminator.fieldName === field.name &&
+                    (() => (
+                      <DiscriminatorDropdown
+                        parent={this.parentSchema}
+                        enumValues={field.schema.enum}
+                      />
+                    ))) ||
+                  undefined
                 }
                 className={field.expanded ? 'expanded' : undefined}
-                showExamples={showObjectSchemaExamples}
-                skipReadOnly={skipReadOnly}
-                skipWriteOnly={skipWriteOnly}
-                showTitle={showTitle}
-                level={level}
+                showExamples={false}
+                skipReadOnly={this.props.skipReadOnly}
+                skipWriteOnly={this.props.skipWriteOnly}
+                showTitle={this.props.showTitle}
               />
             );
           })}
         </tbody>
       </PropertiesTable>
     );
-  },
-);
+  }
+}

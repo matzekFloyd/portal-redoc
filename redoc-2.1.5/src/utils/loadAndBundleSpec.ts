@@ -1,41 +1,19 @@
-import type { Source, Document } from '@redocly/openapi-core';
-// eslint-disable-next-line import/no-internal-modules
-import type { ResolvedConfig } from '@redocly/openapi-core/lib/config';
-
-// eslint-disable-next-line import/no-internal-modules
-import { bundle } from '@redocly/openapi-core/lib/bundle';
-// eslint-disable-next-line import/no-internal-modules
-import { Config } from '@redocly/openapi-core/lib/config/config';
-
+import * as JsonSchemaRefParser from 'json-schema-ref-parser';
 /* tslint:disable-next-line:no-implicit-dependencies */
 import { convertObj } from 'swagger2openapi';
 import { OpenAPISpec } from '../types';
-import { IS_BROWSER } from './dom';
 
 export async function loadAndBundleSpec(specUrlOrObject: object | string): Promise<OpenAPISpec> {
-  const config = new Config({} as ResolvedConfig);
-  const bundleOpts = {
-    config,
-    base: IS_BROWSER ? window.location.href : process.cwd(),
-  };
+  const parser = new JsonSchemaRefParser();
+  const spec = (await parser.bundle(specUrlOrObject, {
+    resolve: { http: { withCredentials: false } },
+  } as object)) as any;
 
-  if (IS_BROWSER) {
-    config.resolve.http.customFetch = global.fetch;
-  }
-
-  if (typeof specUrlOrObject === 'object' && specUrlOrObject !== null) {
-    bundleOpts['doc'] = {
-      source: { absoluteRef: '' } as Source,
-      parsed: specUrlOrObject,
-    } as Document;
+  if (spec.swagger !== undefined) {
+    return convertSwagger2OpenAPI(spec);
   } else {
-    bundleOpts['ref'] = specUrlOrObject;
+    return spec;
   }
-
-  const {
-    bundle: { parsed },
-  } = await bundle(bundleOpts);
-  return parsed.swagger !== undefined ? convertSwagger2OpenAPI(parsed) : parsed;
 }
 
 export function convertSwagger2OpenAPI(spec: any): Promise<OpenAPISpec> {

@@ -1,21 +1,12 @@
 import { action, observable, makeObservable } from 'mobx';
 
-import type { OpenAPIResponse, Referenced } from '../../types';
+import { OpenAPIResponse, Referenced } from '../../types';
 
-import { getStatusCodeType, extractExtensions } from '../../utils';
-import type { OpenAPIParser } from '../OpenAPIParser';
-import type { RedocNormalizedOptions } from '../RedocNormalizedOptions';
+import { getStatusCodeType } from '../../utils';
+import { OpenAPIParser } from '../OpenAPIParser';
+import { RedocNormalizedOptions } from '../RedocNormalizedOptions';
 import { FieldModel } from './Field';
 import { MediaContentModel } from './MediaContent';
-
-type ResponseProps = {
-  parser: OpenAPIParser;
-  code: string;
-  defaultAsError: boolean;
-  infoOrRef: Referenced<OpenAPIResponse>;
-  options: RedocNormalizedOptions;
-  isEvent: boolean;
-};
 
 export class ResponseModel {
   @observable
@@ -27,24 +18,23 @@ export class ResponseModel {
   description: string;
   type: string;
   headers: FieldModel[] = [];
-  extensions: Record<string, any>;
 
-  constructor({
-    parser,
-    code,
-    defaultAsError,
-    infoOrRef,
-    options,
-    isEvent: isRequest,
-  }: ResponseProps) {
+  constructor(
+    parser: OpenAPIParser,
+    code: string,
+    defaultAsError: boolean,
+    infoOrRef: Referenced<OpenAPIResponse>,
+    options: RedocNormalizedOptions,
+  ) {
     makeObservable(this);
 
     this.expanded = options.expandResponses === 'all' || options.expandResponses[code];
 
-    const { resolved: info } = parser.deref(infoOrRef);
+    const info = parser.deref(infoOrRef);
+    parser.exitRef(infoOrRef);
     this.code = code;
     if (info.content !== undefined) {
-      this.content = new MediaContentModel(parser, info.content, isRequest, options);
+      this.content = new MediaContentModel(parser, info.content, false, options);
     }
 
     if (info['x-summary'] !== undefined) {
@@ -63,10 +53,6 @@ export class ResponseModel {
         const header = headers[name];
         return new FieldModel(parser, { ...header, name }, '', options);
       });
-    }
-
-    if (options.showExtensions) {
-      this.extensions = extractExtensions(info, options.showExtensions);
     }
   }
 

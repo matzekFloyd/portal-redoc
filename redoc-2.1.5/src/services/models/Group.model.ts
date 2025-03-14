@@ -1,9 +1,10 @@
 import { action, observable, makeObservable } from 'mobx';
 
-import type { OpenAPIExternalDocumentation, OpenAPITag } from '../../types';
+import { OpenAPIExternalDocumentation, OpenAPITag } from '../../types';
 import { safeSlugify } from '../../utils';
-import { MarkdownRenderer } from '../MarkdownRenderer';
-import type { ContentItemModel, IMenuItem, MarkdownHeading, MenuItemGroupType } from '../types';
+import { MarkdownHeading, MarkdownRenderer } from '../MarkdownRenderer';
+import { ContentItemModel } from '../MenuBuilder';
+import { IMenuItem, MenuItemGroupType } from '../MenuStore';
 
 /**
  * Operations Group model ready to be used by components
@@ -13,7 +14,6 @@ export class GroupModel implements IMenuItem {
   id: string;
   absoluteIdx?: number;
   name: string;
-  sidebarLabel: string;
   description?: string;
   type: MenuItemGroupType;
 
@@ -42,8 +42,6 @@ export class GroupModel implements IMenuItem {
     this.type = type;
     this.name = tagOrGroup['x-displayName'] || tagOrGroup.name;
     this.level = (tagOrGroup as MarkdownHeading).level || 1;
-
-    this.sidebarLabel = this.name;
 
     // remove sections from markdown, same as in ApiInfo
     this.description = tagOrGroup.description || '';

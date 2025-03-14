@@ -1,22 +1,20 @@
 import { dirname } from 'path';
 import * as URLtemplate from 'url-template';
 
-import { ExtendedOpenAPIOperation } from '../services';
 import { FieldModel } from '../services/models';
 import { OpenAPIParser } from '../services/OpenAPIParser';
 import {
   OpenAPIEncoding,
   OpenAPIMediaType,
+  OpenAPIOperation,
   OpenAPIParameter,
   OpenAPIParameterStyle,
-  OpenAPIRequestBody,
-  OpenAPIResponse,
   OpenAPISchema,
   OpenAPIServer,
   Referenced,
 } from '../types';
 import { IS_BROWSER } from './dom';
-import { isNumeric, removeQueryStringAndHash, resolveUrl, isArray, isBoolean } from './helpers';
+import { isNumeric, removeQueryString, resolveUrl } from './helpers';
 
 function isWildcardStatusCode(statusCode: string | number): statusCode is string {
   return typeof statusCode === 'string' && /\dxx/i.test(statusCode);
@@ -58,19 +56,17 @@ const operationNames = {
   patch: true,
   delete: true,
   options: true,
-  $ref: true,
 };
 
 export function isOperationName(key: string): boolean {
   return key in operationNames;
 }
 
-export function getOperationSummary(operation: ExtendedOpenAPIOperation): string {
+export function getOperationSummary(operation: OpenAPIOperation): string {
   return (
     operation.summary ||
     operation.operationId ||
     (operation.description && operation.description.substring(0, 50)) ||
-    operation.pathName ||
     '<no summary>'
   );
 }
@@ -85,8 +81,6 @@ const schemaKeywordTypes = {
   maxLength: 'string',
   minLength: 'string',
   pattern: 'string',
-  contentEncoding: 'string',
-  contentMediaType: 'string',
 
   items: 'array',
   maxItems: 'array',
@@ -97,13 +91,11 @@ const schemaKeywordTypes = {
   minProperties: 'object',
   required: 'object',
   additionalProperties: 'object',
-  unevaluatedProperties: 'object',
   properties: 'object',
-  patternProperties: 'object',
 };
 
 export function detectType(schema: OpenAPISchema): string {
-  if (schema.type !== undefined && !isArray(schema.type)) {
+  if (schema.type !== undefined) {
     return schema.type;
   }
   const keywords = Object.keys(schemaKeywordTypes);
@@ -117,47 +109,25 @@ export function detectType(schema: OpenAPISchema): string {
   return 'any';
 }
 
-export function isPrimitiveType(
-  schema: OpenAPISchema,
-  type: string | string[] | undefined = schema.type,
-) {
-  if (schema['x-circular-ref']) {
-    return true;
-  }
-
+export function isPrimitiveType(schema: OpenAPISchema, type: string | undefined = schema.type) {
   if (schema.oneOf !== undefined || schema.anyOf !== undefined) {
     return false;
   }
 
-  if ((schema.if && schema.then) || (schema.if && schema.else)) {
+  if (type === 'object') {
+    return schema.properties !== undefined
+      ? Object.keys(schema.properties).length === 0
+      : schema.additionalProperties === undefined;
+  }
+
+  if (type === 'array') {
+    if (schema.items === undefined) {
+      return true;
+    }
     return false;
   }
 
-  let isPrimitive = true;
-  const isArrayType = isArray(type);
-
-  if (type === 'object' || (isArrayType && type?.includes('object'))) {
-    isPrimitive =
-      schema.properties !== undefined
-        ? Object.keys(schema.properties).length === 0
-        : schema.additionalProperties === undefined &&
-          schema.unevaluatedProperties === undefined &&
-          schema.patternProperties === undefined;
-  }
-
-  if (isArray(schema.items) || isArray(schema.prefixItems)) {
-    return false;
-  }
-
-  if (
-    schema.items !== undefined &&
-    !isBoolean(schema.items) &&
-    (type === 'array' || (isArrayType && type?.includes('array')))
-  ) {
-    isPrimitive = isPrimitiveType(schema.items, schema.items.type);
-  }
-
-  return isPrimitive;
+  return true;
 }
 
 export function isJsonLike(contentType: string): boolean {
@@ -169,7 +139,7 @@ export function isFormUrlEncoded(contentType: string): boolean {
 }
 
 function delimitedEncodeField(fieldVal: any, fieldName: string, delimiter: string): string {
-  if (isArray(fieldVal)) {
+  if (Array.isArray(fieldVal)) {
     return fieldVal.map(v => v.toString()).join(delimiter);
   } else if (typeof fieldVal === 'object') {
     return Object.keys(fieldVal)
@@ -181,7 +151,7 @@ function delimitedEncodeField(fieldVal: any, fieldName: string, delimiter: strin
 }
 
 function deepObjectEncodeField(fieldVal: any, fieldName: string): string {
-  if (isArray(fieldVal)) {
+  if (Array.isArray(fieldVal)) {
     console.warn('deepObject style cannot be used with array value:' + fieldVal.toString());
     return '';
   } else if (typeof fieldVal === 'object') {
@@ -214,7 +184,7 @@ export function urlFormEncodePayload(
   payload: object,
   encoding: { [field: string]: OpenAPIEncoding } = {},
 ) {
-  if (isArray(payload)) {
+  if (Array.isArray(payload)) {
     throw new Error('Payload must have fields: ' + payload.toString());
   } else {
     return Object.keys(payload)
@@ -273,7 +243,7 @@ function serializeQueryParameter(
     case 'form':
       return serializeFormValue(name, explode, value);
     case 'spaceDelimited':
-      if (!isArray(value)) {
+      if (!Array.isArray(value)) {
         console.warn('The style spaceDelimited is only applicable to arrays');
         return '';
       }
@@ -283,7 +253,7 @@ function serializeQueryParameter(
 
       return `${name}=${value.join('%20')}`;
     case 'pipeDelimited':
-      if (!isArray(value)) {
+      if (!Array.isArray(value)) {
         console.warn('The style pipeDelimited is only applicable to arrays');
         return '';
       }
@@ -293,7 +263,7 @@ function serializeQueryParameter(
 
       return `${name}=${value.join('|')}`;
     case 'deepObject':
-      if (!explode || isArray(value) || typeof value !== 'object') {
+      if (!explode || Array.isArray(value) || typeof value !== 'object') {
         console.warn('The style deepObject is only applicable for objects with explode=true');
         return '';
       }
@@ -349,7 +319,7 @@ export function serializeParameterValueWithMime(value: any, mime: string): strin
 }
 
 export function serializeParameterValue(
-  parameter: (OpenAPIParameter & { serializationMime?: string }) | FieldModel,
+  parameter: OpenAPIParameter & { serializationMime?: string },
   value: any,
 ): string {
   const { name, style, explode = false, serializationMime } = parameter;
@@ -388,40 +358,21 @@ export function serializeParameterValue(
   }
 }
 
-export function getSerializedValue(field: FieldModel, example: any) {
-  if (field.in) {
-    // decode for better readability in examples: see https://github.com/Redocly/redoc/issues/1138
-    return decodeURIComponent(serializeParameterValue(field, example));
-  } else {
-    return String(example);
-  }
-}
-
 export function langFromMime(contentType: string): string {
   if (contentType.search(/xml/i) !== -1) {
     return 'xml';
   }
-
-  if (contentType.search(/csv/i) !== -1) {
-    return 'csv';
-  }
-
-  if (contentType.search(/plain/i) !== -1) {
-    return 'tex';
-  }
-
   return 'clike';
 }
 
-const DEFINITION_NAME_REGEX = /^#\/components\/(schemas|pathItems)\/([^/]+)$/;
-
 export function isNamedDefinition(pointer?: string): boolean {
-  return DEFINITION_NAME_REGEX.test(pointer || '');
+  return /^#\/components\/schemas\/[^\/]+$/.test(pointer || '');
 }
 
 export function getDefinitionName(pointer?: string): string | undefined {
-  const [name] = pointer?.match(DEFINITION_NAME_REGEX)?.reverse() || [];
-  return name;
+  if (!pointer) return undefined;
+  const match = pointer.match(/^#\/components\/schemas\/([^\/]+)$/);
+  return match === null ? undefined : match[1]
 }
 
 function humanizeMultipleOfConstraint(multipleOf: number | undefined): string | undefined {
@@ -443,7 +394,7 @@ function humanizeRangeConstraint(
   let stringRange;
   if (min !== undefined && max !== undefined) {
     if (min === max) {
-      stringRange = `= ${min} ${description}`;
+      stringRange = `${min} ${description}`;
     } else {
       stringRange = `[ ${min} .. ${max} ] ${description}`;
     }
@@ -460,29 +411,6 @@ function humanizeRangeConstraint(
   return stringRange;
 }
 
-export function humanizeNumberRange(schema: OpenAPISchema): string | undefined {
-  const minimum =
-    typeof schema.exclusiveMinimum === 'number'
-      ? Math.min(schema.exclusiveMinimum, schema.minimum ?? Infinity)
-      : schema.minimum;
-  const maximum =
-    typeof schema.exclusiveMaximum === 'number'
-      ? Math.max(schema.exclusiveMaximum, schema.maximum ?? -Infinity)
-      : schema.maximum;
-  const exclusiveMinimum = typeof schema.exclusiveMinimum === 'number' || schema.exclusiveMinimum;
-  const exclusiveMaximum = typeof schema.exclusiveMaximum === 'number' || schema.exclusiveMaximum;
-
-  if (minimum !== undefined && maximum !== undefined) {
-    return `${exclusiveMinimum ? '( ' : '[ '}${minimum} .. ${maximum}${
-      exclusiveMaximum ? ' )' : ' ]'
-    }`;
-  } else if (maximum !== undefined) {
-    return `${exclusiveMaximum ? '< ' : '<= '}${maximum}`;
-  } else if (minimum !== undefined) {
-    return `${exclusiveMinimum ? '> ' : '>= '}${minimum}`;
-  }
-}
-
 export function humanizeConstraints(schema: OpenAPISchema): string[] {
   const res: string[] = [];
 
@@ -496,21 +424,26 @@ export function humanizeConstraints(schema: OpenAPISchema): string[] {
     res.push(arrayRange);
   }
 
-  const propertiesRange = humanizeRangeConstraint(
-    'properties',
-    schema.minProperties,
-    schema.maxProperties,
-  );
-  if (propertiesRange !== undefined) {
-    res.push(propertiesRange);
-  }
-
   const multipleOfConstraint = humanizeMultipleOfConstraint(schema.multipleOf);
   if (multipleOfConstraint !== undefined) {
     res.push(multipleOfConstraint);
   }
 
-  const numberRange = humanizeNumberRange(schema);
+  let numberRange;
+  if (schema.minimum !== undefined && schema.maximum !== undefined) {
+    numberRange = schema.exclusiveMinimum ? '( ' : '[ ';
+    numberRange += schema.minimum;
+    numberRange += ' .. ';
+    numberRange += schema.maximum;
+    numberRange += schema.exclusiveMaximum ? ' )' : ' ]';
+  } else if (schema.maximum !== undefined) {
+    numberRange = schema.exclusiveMaximum ? '< ' : '<= ';
+    numberRange += schema.maximum;
+  } else if (schema.minimum !== undefined) {
+    numberRange = schema.exclusiveMinimum ? '> ' : '>= ';
+    numberRange += schema.minimum;
+  }
+
   if (numberRange !== undefined) {
     res.push(numberRange);
   }
@@ -556,13 +489,13 @@ export function mergeParams(
 ): Array<Referenced<OpenAPIParameter>> {
   const operationParamNames = {};
   operationParams.forEach(param => {
-    ({ resolved: param } = parser.deref(param));
+    param = parser.shalowDeref(param);
     operationParamNames[param.name + '_' + param.in] = true;
   });
 
   // filter out path params overridden by operation ones with the same name
   pathParams = pathParams.filter(param => {
-    ({ resolved: param } = parser.deref(param));
+    param = parser.shalowDeref(param);
     return !operationParamNames[param.name + '_' + param.in];
   });
 
@@ -606,7 +539,7 @@ export function normalizeServers(
     return href.endsWith('.html') ? dirname(href) : href;
   };
 
-  const baseUrl = specUrl === undefined ? removeQueryStringAndHash(getHref()) : dirname(specUrl);
+  const baseUrl = specUrl === undefined ? removeQueryString(getHref()) : dirname(specUrl);
 
   if (servers.length === 0) {
     // Behaviour defined in OpenAPI spec: https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#openapi-object
@@ -630,8 +563,8 @@ export function normalizeServers(
   });
 }
 
+export const SECURITY_DEFINITIONS_COMPONENT_NAME = 'security-definitions';
 export const SECURITY_DEFINITIONS_JSX_NAME = 'SecurityDefinitions';
-export const OLD_SECURITY_DEFINITIONS_JSX_NAME = 'security-definitions';
 export const SCHEMA_DEFINITION_JSX_NAME = 'SchemaDefinition';
 
 export let SECURITY_SCHEMES_SECTION_PREFIX = 'section/Authentication/';
@@ -648,8 +581,6 @@ export const shortenHTTPVerb = verb =>
 export function isRedocExtension(key: string): boolean {
   const redocExtensions = {
     'x-circular-ref': true,
-    'x-parentRefs': true,
-    'x-refsStack': true,
     'x-code-samples': true, // deprecated
     'x-codeSamples': true,
     'x-displayName': true,
@@ -689,34 +620,4 @@ export function pluralizeType(displayType: string): string {
     .split(' or ')
     .map(type => type.replace(/^(string|object|number|integer|array|boolean)s?( ?.*)/, '$1s$2'))
     .join(' or ');
-}
-
-export function getContentWithLegacyExamples(
-  info: OpenAPIRequestBody | OpenAPIResponse,
-): { [mime: string]: OpenAPIMediaType } | undefined {
-  let mediaContent = info.content;
-  const xExamples = info['x-examples']; // converted from OAS2 body param
-  const xExample = info['x-example']; // converted from OAS2 body param
-
-  if (xExamples) {
-    mediaContent = { ...mediaContent };
-    for (const mime of Object.keys(xExamples)) {
-      const examples = xExamples[mime];
-      mediaContent[mime] = {
-        ...mediaContent[mime],
-        examples,
-      };
-    }
-  } else if (xExample) {
-    mediaContent = { ...mediaContent };
-    for (const mime of Object.keys(xExample)) {
-      const example = xExample[mime];
-      mediaContent[mime] = {
-        ...mediaContent[mime],
-        example,
-      };
-    }
-  }
-
-  return mediaContent;
 }

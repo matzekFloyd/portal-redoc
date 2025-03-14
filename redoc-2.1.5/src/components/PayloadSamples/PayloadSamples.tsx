@@ -33,13 +33,6 @@ export class PayloadSamples extends React.Component<PayloadSamplesProps> {
   }
 
   private renderDropdown = props => {
-    return (
-      <DropdownOrLabel
-        Label={MimeLabel}
-        Dropdown={InvertedSimpleDropdown}
-        {...props}
-        variant="dark"
-      />
-    );
+    return <DropdownOrLabel Label={MimeLabel} Dropdown={InvertedSimpleDropdown} {...props} />;
   };
 }

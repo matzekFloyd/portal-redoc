@@ -1,4 +1,6 @@
-import { objectHas, objectSet } from './object';
+/* tslint:disable:no-implicit-dependencies */
+
+import { has, set } from 'lodash';
 
 function traverseComponent(root, fn) {
   if (!root) {
@@ -18,8 +20,8 @@ export function filterPropsDeep<T extends object>(component: T, paths: string[])
   traverseComponent(component, comp => {
     if (comp.props) {
       for (const path of paths) {
-        if (objectHas(comp.props, path)) {
-          objectSet(comp.props, path, '<<<filtered>>>');
+        if (has(comp.props, path)) {
+          set(comp.props, path, '<<<filtered>>>');
         }
       }
     }

@@ -1,5 +1,11 @@
 import * as lunr from 'lunr';
-import type { SearchResult } from './types';
+
+try {
+  // tslint:disable-next-line
+  require('core-js/es/promise'); // bundle into worker
+} catch (_) {
+  // nope
+}
 
 /* just for better typings */
 export default class Worker {
@@ -10,6 +16,17 @@ export default class Worker {
   load = load;
   dispose = dispose;
   fromExternalJS = fromExternalJS;
+}
+
+export interface SearchDocument {
+  title: string;
+  description: string;
+  id: string;
+}
+
+export interface SearchResult<T = string> {
+  meta: T;
+  score: number;
 }
 
 let store: any[] = [];
@@ -37,10 +54,7 @@ function initEmpty() {
 
 initEmpty();
 
-const expandTerm = term => {
-  const token = lunr.trimmer(new lunr.Token(term, {}));
-  return '*' + lunr.stemmer(token) + '*';
-};
+const expandTerm = term => '*' + lunr.stemmer(new lunr.Token(term, {})) + '*';
 
 export function add<T>(title: string, description: string, meta?: T) {
   const ref = store.push(meta) - 1;

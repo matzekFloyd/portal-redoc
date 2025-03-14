@@ -1,5 +1,5 @@
-import * as React from 'react';
-import { createContext, useContext } from 'react';
+import * as memoize from 'memoize-one/dist/memoize-one.cjs'; // fixme: https://github.com/alexreardon/memoize-one/issues/37
+import { Component, createContext } from 'react';
 
 import { AppStore } from '../services/';
 import { RedocRawOptions } from '../services/RedocNormalizedOptions';
@@ -14,7 +14,7 @@ export interface StoreBuilderProps {
 
   onLoaded?: (e?: Error) => void;
 
-  children: (props: { loading: boolean; store: AppStore | null }) => any;
+  children: (props: { loading: boolean; store?: AppStore }) => any;
 }
 
 export interface StoreBuilderState {
@@ -25,64 +25,79 @@ export interface StoreBuilderState {
   prevSpecUrl?: string;
 }
 
-const StoreContext = createContext<AppStore | undefined>(undefined);
-const { Provider, Consumer } = StoreContext;
-export { Provider as StoreProvider, Consumer as StoreConsumer, StoreContext };
+const { Provider, Consumer } = createContext<AppStore | undefined>(undefined);
+export { Provider as StoreProvider, Consumer as StoreConsumer };
 
-export function StoreBuilder(props: StoreBuilderProps) {
-  const { spec, specUrl, options, onLoaded, children } = props;
+export class StoreBuilder extends Component<StoreBuilderProps, StoreBuilderState> {
+  static getDerivedStateFromProps(nextProps: StoreBuilderProps, prevState: StoreBuilderState) {
+    if (nextProps.specUrl !== prevState.prevSpecUrl || nextProps.spec !== prevState.prevSpec) {
+      return {
+        loading: true,
+        resolvedSpec: null,
+        prevSpec: nextProps.spec,
+        prevSpecUrl: nextProps.specUrl,
+      };
+    }
 
-  const [resolvedSpec, setResolvedSpec] = React.useState<any>(null);
-  const [error, setError] = React.useState<Error | null>(null);
-  if (error) {
-    throw error;
+    return null;
   }
 
-  React.useEffect(() => {
-    async function load() {
-      if (!spec && !specUrl) {
-        return undefined;
-      }
-      setResolvedSpec(null);
-      try {
-        const resolved = await loadAndBundleSpec(spec || specUrl!);
-        setResolvedSpec(resolved);
-      } catch (e) {
-        if (onLoaded) {
-          onLoaded(e);
-        }
-        setError(e);
-        throw e;
-      }
-    }
-    load();
-  }, [spec, specUrl]);
+  state: StoreBuilderState = {
+    loading: true,
+    resolvedSpec: null,
+  };
 
-  const store = React.useMemo(() => {
-    if (!resolvedSpec) return null;
+  @memoize
+  makeStore(spec, specUrl, options) {
+    if (!spec) {
+      return undefined;
+    }
     try {
-      return new AppStore(resolvedSpec, specUrl, options);
+      return new AppStore(spec, specUrl, options);
     } catch (e) {
-      if (onLoaded) {
-        onLoaded(e);
+      if (this.props.onLoaded) {
+        this.props.onLoaded(e);
       }
       throw e;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resolvedSpec, specUrl, options]);
+  }
 
-  React.useEffect(() => {
-    if (store && onLoaded) {
-      onLoaded();
+  componentDidMount() {
+    this.load();
+  }
+
+  componentDidUpdate() {
+    if (this.state.resolvedSpec === null) {
+      this.load();
+    } else if (!this.state.loading && this.props.onLoaded) {
+      // may run multiple time
+      this.props.onLoaded();
     }
-  }, [store, onLoaded]);
+  }
 
-  return children({
-    loading: !store,
-    store,
-  });
-}
+  async load() {
+    const { specUrl, spec } = this.props;
+    try {
+      const resolvedSpec = await loadAndBundleSpec(spec || specUrl!);
+      this.setState({ resolvedSpec, loading: false });
+    } catch (e) {
+      if (this.props.onLoaded) {
+        this.props.onLoaded(e);
+      }
+      this.setState({ error: e });
+    }
+  }
 
-export function useStore(): AppStore | undefined {
-  return useContext(StoreContext);
+  render() {
+    if (this.state.error) {
+      throw this.state.error;
+    }
+
+    const { specUrl, options } = this.props;
+    const { loading, resolvedSpec } = this.state;
+    return this.props.children({
+      loading,
+      store: this.makeStore(resolvedSpec, specUrl, options),
+    });
+  }
 }

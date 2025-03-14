@@ -22,7 +22,7 @@ const renderRoot = (Component: typeof Redoc, props: RedocProps) =>
 async function importRedocs() {
   return Promise.all(
     revisions.map(rev => {
-      return import('./' + rev.path.substring(12) + '/redoc.lib.js');
+      return import(/* webpackChunkName: "RedocBenchmark" */ './' + rev.path.substring(12) + '/redoc.lib.js');
     }),
   );
 }

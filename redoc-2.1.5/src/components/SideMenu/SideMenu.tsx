@@ -1,19 +1,16 @@
 import { observer } from 'mobx-react';
 import * as React from 'react';
 
-import { MenuStore } from '../../services';
-import type { IMenuItem } from '../../services';
+import { IMenuItem, MenuStore } from '../../services/MenuStore';
 import { OptionsContext } from '../OptionsProvider';
 import { MenuItems } from './MenuItems';
 
 import { PerfectScrollbarWrap } from '../../common-elements/perfect-scrollbar';
 import { RedocAttribution } from './styled.elements';
-import RedoclyLogo from './Logo';
 
 @observer
 export class SideMenu extends React.Component<{ menu: MenuStore; className?: string }> {
   static contextType = OptionsContext;
-  declare context: React.ContextType<typeof OptionsContext>;
   private _updateScroll?: () => void;
 
   render() {
@@ -28,9 +25,8 @@ export class SideMenu extends React.Component<{ menu: MenuStore; className?: str
       >
         <MenuItems items={store.items} onActivate={this.activate} root={true} />
         <RedocAttribution>
-          <a target="_blank" rel="noopener noreferrer" href="https://redocly.com/redoc/">
-            <RedoclyLogo />
-            API docs by Redocly
+          <a target="_blank" rel="noopener noreferrer" href="https://github.com/Redocly/redoc">
+            Documentation Powered by ReDoc
           </a>
         </RedocAttribution>
       </PerfectScrollbarWrap>
@@ -41,6 +37,7 @@ export class SideMenu extends React.Component<{ menu: MenuStore; className?: str
     if (item && item.active && this.context.menuToggle) {
       return item.expanded ? item.collapse() : item.expand();
     }
+
     this.props.menu.activateAndScroll(item, true);
     setTimeout(() => {
       if (this._updateScroll) {

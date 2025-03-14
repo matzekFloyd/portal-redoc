@@ -9,21 +9,24 @@ export interface SourceCodeProps {
   lang: string;
 }
 
-export const SourceCode = (props: SourceCodeProps) => {
-  const { source, lang } = props;
-  return <StyledPre dangerouslySetInnerHTML={{ __html: highlight(source, lang) }} />;
-};
+export class SourceCode extends React.PureComponent<SourceCodeProps> {
+  render() {
+    const { source, lang } = this.props;
+    return <StyledPre dangerouslySetInnerHTML={{ __html: highlight(source, lang) }} />;
+  }
+}
 
-export const SourceCodeWithCopy = (props: SourceCodeProps) => {
-  const { source, lang } = props;
-  return (
-    <CopyButtonWrapper data={source}>
-      {({ renderCopyButton }) => (
-        <SampleControlsWrap>
-          <SampleControls>{renderCopyButton()}</SampleControls>
-          <SourceCode lang={lang} source={source} />
-        </SampleControlsWrap>
-      )}
-    </CopyButtonWrapper>
-  );
-};
+export class SourceCodeWithCopy extends React.Component<SourceCodeProps> {
+  render() {
+    return (
+      <CopyButtonWrapper data={this.props.source}>
+        {({ renderCopyButton }) => (
+          <SampleControlsWrap>
+            <SampleControls>{renderCopyButton()}</SampleControls>
+            <SourceCode lang={this.props.lang} source={this.props.source} />
+          </SampleControlsWrap>
+        )}
+      </CopyButtonWrapper>
+    );
+  }
+}

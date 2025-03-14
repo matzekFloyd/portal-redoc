@@ -14,34 +14,27 @@ export interface ResponseTitleProps {
   onClick?: () => void;
 }
 
-function ResponseTitleComponent({
-  title,
-  type,
-  empty,
-  code,
-  opened,
-  className,
-  onClick,
-}: ResponseTitleProps): React.ReactElement {
-  return (
-    <button
-      className={className}
-      onClick={(!empty && onClick) || undefined}
-      aria-expanded={opened}
-      disabled={empty}
-    >
-      {!empty && (
-        <ShelfIcon
-          size={'1.5em'}
-          color={type}
-          direction={opened ? 'down' : 'right'}
-          float={'left'}
-        />
-      )}
-      <Code>{code} </Code>
-      <Markdown compact={true} inline={true} source={title} />
-    </button>
-  );
+export class ResponseTitle extends React.PureComponent<ResponseTitleProps> {
+  render() {
+    const { title, type, empty, code, opened, className, onClick } = this.props;
+    return (
+      <button
+        className={className}
+        onClick={(!empty && onClick) || undefined}
+        aria-expanded={opened}
+        disabled={empty}
+      >
+        {!empty && (
+          <ShelfIcon
+            size={'1.5em'}
+            color={type}
+            direction={opened ? 'down' : 'right'}
+            float={'left'}
+          />
+        )}
+        <Code>{code} </Code>
+        <Markdown compact={true} inline={true} source={title} />
+      </button>
+    );
+  }
 }
-
-export const ResponseTitle = React.memo<ResponseTitleProps>(ResponseTitleComponent);
