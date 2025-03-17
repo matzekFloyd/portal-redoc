@@ -5,7 +5,6 @@
 - Install dependencies: `npm install`
 - Bundle redoc: `npm bundle:standalone`
   - In case of ``Error: error:0308010C:digital envelope routines::unsupported``: Switch to an older node version using nvm: `nvm use 16`. This should resolve the issue.
-  - Switch to an older npm version with `nvm`:
 - The bundled redoc is now created and added to `redoc-kyc/bundles/redoc.standalone.js`
 - To test the bundled redoc file, open the `redoc-kyc/index.html` file in your browser
 
