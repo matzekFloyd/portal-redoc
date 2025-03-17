@@ -1,0 +1,2876 @@
+---
+openapi: 3.0.0
+info:
+  title: KYC API Documentation
+  version: '2022.11'
+  description: API Interface to retrieve company data and products from business registers
+  contact:
+    name: KYC API Support
+    email: clientservices@moodys.com
+    url: https://kycapi.kompany.com/
+components:
+  securitySchemes:
+    user_key:
+      type: apiKey
+      in: header
+      name: user_key
+  schemas:
+    Error:
+      required:
+        - code
+        - message
+        - tag
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+        tag:
+          type: string
+        fault:
+          type: string
+    CountryList:
+      type: array
+      items:
+        properties:
+          country_code:
+            type: string
+          country_name:
+            type: string
+    PricingRuleList:
+      type: array
+      items:
+        properties:
+          metric_id:
+            type: string
+          sku:
+            type: string
+          cost_per_unit:
+            type: string
+          min:
+            type: string
+          max:
+            type: string
+    CommercialRegistryHealth:
+      type: array
+      items:
+        properties:
+          name:
+            type: string
+          status:
+            type: string
+    CompanyList:
+      type: array
+      items:
+        properties:
+          country:
+            type: string
+          id:
+            type: string
+          name:
+            type: string
+          registrationNumber:
+            type: string
+          status:
+            type: string
+          address:
+            type: array
+            items:
+              type: string
+          formattedAddress:
+            type: array
+            items:
+              type: string
+          managingDirectors:
+            type: array
+            items:
+              type: string
+          secretaries:
+            type: array
+            items:
+              type: string
+          dateOfIncorporation:
+            type: string
+          legalForm:
+            type: string
+          sicNaceCodes:
+            type: array
+            items:
+              type: string
+          extraData:
+            type: object
+          requestTime:
+            type: integer
+    Company:
+      required:
+        - country
+        - id
+        - name
+        - registrationNumber
+      properties:
+        country:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        registrationNumber:
+          type: string
+        status:
+          type: string
+        address:
+          type: array
+          items:
+            type: string
+        formattedAddress:
+          type: array
+          items:
+            type: string
+        managingDirectors:
+          type: array
+          items:
+            type: string
+        secretaries:
+          type: array
+          items:
+            type: string
+        dateOfIncorporation:
+          type: string
+        legalForm:
+          type: string
+        sicNaceCodes:
+          type: array
+          items:
+            type: string
+        extraData:
+          type: object
+        requestTime:
+          type: integer
+    LeiLookupResult:
+      properties:
+        lei:
+          type: string
+        validLei:
+          type: boolean
+        company:
+          "$ref": "#/components/schemas/Company"
+        isins:
+          type: array
+          items:
+            type: string
+        current_page:
+          type: integer
+          format: int32
+        last_page:
+          type: integer
+          format: int32
+        next_page:
+          type: string
+        total_num_isins:
+          type: integer
+          format: int32
+    IsinLookupResultList:
+      type: array
+      items:
+        properties:
+          isin:
+            type: string
+          validIsin:
+            type: boolean
+          listings:
+            type: array
+            items:
+              properties:
+                identifier:
+                  type: string
+                stockId:
+                  type: string
+                name:
+                  type: string
+                symbol:
+                  type: string
+                exchCode:
+                  type: string
+                securityType:
+                  type: string
+                additionalSecurityType:
+                  type: string
+                securityDescription:
+                  type: string
+                marketSector:
+                  type: string
+                shareClassId:
+                  type: string
+    timestamp:
+      type: string
+      format: date
+    AnnouncementList:
+      type: array
+      items:
+        properties:
+          id:
+            type: string
+          registrationNumber:
+            type: string
+          countryCode:
+            type: string
+          type:
+            type: string
+          time:
+            "$ref": "#/components/schemas/timestamp"
+          text:
+            type: string
+          structured:
+            type: string
+    RegisterWebhookResult:
+      required:
+        - notificationId
+        - monitorStatus
+      properties:
+        notificationId:
+          type: string
+        monitorStatus:
+          type: string
+    MonitorWebhookList:
+      type: array
+      items:
+        properties:
+          notificationId:
+            type: string
+          subjectId:
+            type: string
+          monitorStatus:
+            type: string
+          created:
+            "$ref": "#/components/schemas/timestamp"
+          callbackUrl:
+            type: string
+          callbackCount:
+            type: integer
+            format: int32
+    ProductCatalog:
+      required:
+        - url
+      properties:
+        sku:
+          type: string
+        price:
+          type: number
+          format: float
+        name:
+          type: string
+        description:
+          type: string
+        countryCode:
+          type: string
+        url:
+          type: string
+        method:
+          type: string
+        form:
+          type: string
+    ProductList:
+      type: array
+      items:
+        properties:
+          sku:
+            type: string
+          description:
+            type: string
+          price:
+            type: number
+            format: float
+          countryCode:
+            type: string
+    Product:
+      required:
+        - availability
+        - category
+        - countryCode
+        - description
+        - hasOptions
+        - options
+        - price
+        - provider
+        - sku
+        - type
+      properties:
+        sku:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+          format: float
+        countryCode:
+          type: string
+        hasOptions:
+          type: boolean
+        options:
+          type: array
+          items:
+            type: string
+        availability:
+          type: string
+    ProductOrder:
+      required:
+        - identity
+        - option
+        - ordered
+        - owner
+        - price
+        - sku
+        - status
+        - subjectId
+        - subjectValue
+      properties:
+        identity:
+          type: string
+        owner:
+          type: string
+        sku:
+          type: string
+        price:
+          type: number
+          format: float
+        subjectValue:
+          type: string
+        subjectId:
+          type: string
+        option:
+          type: string
+        status:
+          type: string
+        ordered:
+          "$ref": "#/components/schemas/timestamp"
+    UboLegalForms:
+      properties:
+        legalForm:
+          type: string
+    ProductOrderNotifier:
+      required:
+        - callback
+        - lastCallTime
+        - lastResponseCode
+        - notifierType
+        - productOrderIdentity
+      properties:
+        identity:
+          type: string
+        productOrderIdentity:
+          type: string
+        notifierType:
+          type: string
+        callback:
+          type: string
+        lastCallTime:
+          "$ref": "#/components/schemas/timestamp"
+        lastResponseCode:
+          type: integer
+    ProductDelivery:
+      required:
+        - mimeType
+        - productOrderId
+        - uri
+      properties:
+        productOrderId:
+          type: string
+        mimeType:
+          type: string
+        uri:
+          type: string
+        data:
+          type: string
+        childOrders:
+          type: array
+          items:
+            type: string
+    JsonProductDelivery:
+      required:
+        - mimeType
+        - productOrderId
+        - uri
+        - data
+      properties:
+        productOrderId:
+          type: string
+        mimeType:
+          type: string
+        uri:
+          type: string
+        data:
+          type: object
+    ProofDeliveryBlockChainData:
+      properties:
+        salt:
+          type: string
+        txId:
+          type: string
+        digest:
+          type: string
+        link:
+          type: string
+        digestCalculation:
+          type: string
+        recordedAt:
+          type: string
+    ProofDeliveryTimestampData:
+      properties:
+        tsProof:
+          type: string
+        base64Tsr:
+          type: string
+        status:
+          type: string
+        version:
+          type: string
+        algo:
+          type: string
+        hashedMsg:
+          type: string
+        policy:
+          type: string
+        serialNumber:
+          type: string
+        stampingTime:
+          type: string
+        nonce:
+          type: string
+    ProofDelivery:
+      properties:
+        proofId:
+          type: string
+        subjectId:
+          type: string
+        recordType:
+          type: string
+        data:
+          type: object
+        encData:
+          type: string
+        encKey:
+          type: string
+        blockchainData:
+          "$ref": "#/components/schemas/ProofDeliveryBlockChainData"
+        timeStampData:
+          "$ref": "#/components/schemas/ProofDeliveryTimestampData"
+        children:
+          type: array
+          items:
+            "$ref": "#/components/schemas/ProofDelivery"
+    PepSanctionCheckResult:
+      properties:
+        SourceID:
+          type: integer
+          format: int64
+        SourceName:
+          type: string
+        SourceAgency:
+          type: string
+        SourceEntity:
+          type: string
+        SourceType:
+          type: string
+        ResultsURL:
+          type: string
+        Excerpts:
+          type: string
+        SearchType:
+          type: string
+    PepSanctionCheck:
+      required:
+        - listsChecked
+        - search
+        - status
+        - timestamp
+        - type
+      properties:
+        status:
+          type: string
+        search:
+          type: string
+        type:
+          type: string
+        listsChecked:
+          type: string
+        timestamp:
+          "$ref": "#/components/schemas/timestamp"
+        results:
+          type: array
+          "$ref": "#/components/schemas/PepSanctionCheckResult"
+    VatLookupResultMatch:
+      properties:
+        vat:
+          type: string
+        company:
+          "$ref": "#/components/schemas/Company"
+    VatLookupResult:
+      required:
+        - validationStatus
+        - level
+      properties:
+        searchterm_name:
+          type: string
+        searchterm_country:
+          type: string
+        searchterm_address:
+          type: string
+        matches:
+          type: array
+          items:
+            "$ref": "#/components/schemas/VatLookupResultMatch"
+        timestamp:
+          type: integer
+          format: int32
+    VatVerificationResult:
+      required:
+        - confidenceScore
+        - validationStatus
+      properties:
+        validationStatus:
+          type: boolean
+        confidenceScore:
+          type: number
+        company:
+          "$ref": "#/components/schemas/Company"
+        candidate:
+          type: array
+          items:
+            "$ref": "#/components/schemas/Company"
+    SecondLevelVatVerificationResult:
+      required:
+        - validationStatus
+        - level
+      properties:
+        validationStatus:
+          type: boolean
+        level:
+          type: string
+        name:
+          type: string
+        address:
+          type: string
+        confirmation:
+          type: string
+    EINCompanyList:
+      type: array
+      items:
+        properties:
+          name:
+            type: string
+          ein:
+            type: string
+          irs_score:
+            type: string
+          irs_score_explanation:
+            type: string
+          dba_score:
+            type: string
+          dba_score_explanation:
+            type: string
+          company_score:
+            type: number
+          company_score_explanation:
+            type: string
+          provided_status:
+            type: string
+          provided_status_explanation:
+            type: string
+          confidence_score:
+            type: number
+          confidence_score_explanation:
+            type: string
+          address:
+            type: array
+            items:
+              type: string
+          formattedAddress:
+            type: array
+            items:
+              type: string
+    EinLookupResult:
+      required:
+        - searchterm_name
+        - searchterm_state
+        - searchterm_zip
+        - tight_search
+        - timestamp
+      properties:
+        searchterm_name:
+          type: string
+        searchterm_state:
+          type: string
+        searchterm_zip:
+          type: string
+        tight_search:
+          type: boolean
+        matched_ein_companies:
+          "$ref": "#/components/schemas/EINCompanyList"
+        timestamp:
+          type: number
+    EinBasicVerificationResult:
+      required:
+        - ein
+        - validationStatus
+        - irs_score
+        - irs_score_explanation
+        - dba_score
+        - dba_score_explanation
+        - confidence_score
+        - confidence_score_explanation
+        - timestamp
+      properties:
+        ein:
+          type: string
+        validationStatus:
+          type: boolean
+        irs_score:
+          type: string
+        irs_score_explanation:
+          type: string
+        dba_score:
+          type: string
+        dba_score_explanation:
+          type: string
+        confidence_score:
+          type: string
+        confidence_score_explanation:
+          type: string
+        timestamp:
+          type: number
+    EinComprehensiveVerificationResult:
+      required:
+        - ein
+        - validationStatus
+        - matched_ein_companies
+        - timestamp
+      properties:
+        ein:
+          type: string
+        validationStatus:
+          type: boolean
+        matched_ein_companies:
+          "$ref": "#/components/schemas/EINCompanyList"
+        timestamp:
+          type: number
+    TinNameLookupVerificationResult:
+      required:
+        - tin
+        - matchStatus
+        - possibleMatch
+      properties:
+        tin:
+          type: string
+        matchStatus:
+          type: string
+        possibleMatch:
+          type: string
+    TinBasicCheckVerificationResult:
+      required:
+        - tin
+        - name
+        - validationStatus
+        - matchStatus
+        - possibleMatch
+      properties:
+        tin:
+          type: string
+        name:
+          type: string
+        validationStatus:
+          type: string
+        matchStatus:
+          type: string
+        possibleMatch:
+          type: string
+    TinComprehensiveCheckVerificationResult:
+      required:
+        - tinResult
+        - einResult
+      properties:
+        tinResult:
+          type: string
+        einResult:
+          type: string
+        company:
+          "$ref": "#/components/schemas/Company"
+        candidate:
+          type: array
+          items:
+            "$ref": "#/components/schemas/Company"
+    NifVerificationBasicResult:
+      required:
+        - nifNumber
+        - confidenceScore
+        - validationStatus
+      properties:
+        validationStatus:
+          type: boolean
+        confidenceScore:
+          type: number
+        nifNumber:
+          type: number
+        companyName:
+          type: string
+    NifVerificationCompResult:
+      required:
+        - nifNumber
+        - confidenceScore
+        - validationStatus
+      properties:
+        validationStatus:
+          type: boolean
+        confidenceScore:
+          type: number
+        nifNumber:
+          type: number
+        companyName:
+          type: string
+        address:
+          type: string
+        status:
+          type: object
+        activity:
+          type: object
+        email:
+          type: string
+        phone:
+          type: string
+        website:
+          type: string
+        fax:
+          type: string
+        legalType:
+          type: string
+        capital:
+          type: number
+        currency:
+          type: string
+        geo:
+          type: string
+    IbanVerificationResult:
+      required:
+        - valid
+      properties:
+        valid:
+          type: boolean
+  responses:
+    Error:
+      description: Detailed information about the error
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/Error"
+    Countries:
+      description: List of countries
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/CountryList"
+    PricingRules:
+      description: List of pricing rules
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/PricingRuleList"
+    CommercialRegistersHealth:
+      description: List of the commercial registers and their health data
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/CommercialRegistryHealth"
+    Companies:
+      description: List of companies
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/CompanyList"
+    LeiLookupResult:
+      description: Result of a lookup by LEI number
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/LeiLookupResult"
+    IsinLookupResult:
+      description: Result of a lookup by ISIN number
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/IsinLookupResultList"
+    Company:
+      description: ''
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/Company"
+    Announcements:
+      description: List of announcements
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/AnnouncementList"
+    RegisterWebhookResult:
+      description: Successful webhook registration response
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/RegisterWebhookResult"
+    MonitorWebhooks:
+      description: List of monitor webhooks
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/MonitorWebhookList"
+    ProductCatalog:
+      description: Product with details like URI to purchase it
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/ProductCatalog"
+    Products:
+      description: List of products
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/ProductList"
+    Product:
+      description: Product details
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/Product"
+    ProductOrder:
+      description: Product order details
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/ProductOrder"
+    UboLegalForms:
+      description: Get Ubo Legal Forms
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/UboLegalForms"
+    ProductOrderNotifier:
+      description: Details of configured product order notification
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/ProductOrderNotifier"
+    ProductDelivery:
+      description: Details for retrieval of a delivered product
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - "$ref": "#/components/schemas/ProductDelivery"
+              - "$ref": "#/components/schemas/JsonProductDelivery"
+    ProofDelivery:
+      description: Details attached to a proof of request
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/ProofDelivery"
+    ProofHistoryList:
+      type: array
+      items:
+        properties:
+          proofId:
+            type: string
+          requestId:
+            type: string
+          type:
+            type: string
+          path:
+            type: string
+          timestamp:
+            type: string
+            format: date
+    PepSanctionCheck:
+      description: Result of a PEP and sanctions list check
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/PepSanctionCheck"
+    VatLookupResult:
+      description: Result of a VAT number reverse Lookup
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/VatLookupResult"
+    VatVerificationResult:
+      description: Denotes validity of checked VAT
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/VatVerificationResult"
+    SecondLevelVatVerificationResult:
+      description: Denotes second level validity result of checked VAT
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/SecondLevelVatVerificationResult"
+    EinLookupResult:
+      description: Result of a EIN reverse lookup
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/EinLookupResult"
+    EinBasicResult:
+      description: Result of a basic EIN number verification
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/EinBasicVerificationResult"
+    EinComprehensiveResult:
+      description: Result of a comprehensive EIN number verification
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/EinComprehensiveVerificationResult"
+    TinNameLookupResult:
+      description: Result of a EIN name lookup with TIN number
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/TinNameLookupVerificationResult"
+    TinBasicCheckResult:
+      description: Result of a basic TIN number check with company name
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/TinBasicCheckVerificationResult"
+    TinComprehensiveCheckResult:
+      description: Result of a basic TIN number check with company name and the list
+        of matched companies
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/TinComprehensiveCheckVerificationResult"
+    NifVerificationBasicResult:
+      description: Result of a basic NIF verification
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/NifVerificationBasicResult"
+    NifVerificationCompResult:
+      description: Result of a comprehensive NIF verification
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/NifVerificationCompResult"
+    IbanVerificationResult:
+      description: Denotes validity of checked IBAN
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/IbanVerificationResult"
+    IbanComprehensiveVerificationResult:
+      description: Denotes validity of checked IBAN and provides comprehensive information
+      content:
+        application/json:
+          schema:
+            "$ref": "#/components/schemas/IbanVerificationResult"
+servers:
+  - url: https://api.kompany.com/
+    description: Main endpoint
+tags:
+  - name: v1-system
+    description: system overview
+    x-displayName: system overview
+  - name: v1-company
+    description: legal entity search and data retrieval
+    x-displayName: legal entity search and data retrieval
+  - name: v1-product
+    description: product search, order and retrieval
+    x-displayName: product search, order and retrieval
+  - name: v1-proof
+    description: blockchain and timestamp proof related methods
+    x-displayName: blockchain and timestamp proof related methods
+  - name: v1-pepsanction
+    description: PEP/sanctions/adverse media
+    x-displayName: PEP/sanctions/adverse media
+  - name: v1-vat-verification
+    description: VAT verification
+    x-displayName: VAT verification
+  - name: v1-ein-verification
+    description: EIN tax number verification
+    x-displayName: EIN tax number verification
+  - name: v1-nif-verification
+    description: NIF verification
+    x-displayName: NIF verification
+  - name: v1-iban-verification
+    description: IBAN verification
+    x-displayName: IBAN verification
+  - name: v1-tin-verification
+    description: TIN verification
+    x-displayName: TIN verification
+paths:
+  "/api/v1/system/countries":
+    get:
+      summary: retrieve list of live jurisdictions
+      description: Retrieve the list of all currently enabled countries
+      tags:
+        - v1-system
+      operationId: SystemCountries
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/Countries"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/system/pricelist":
+    get:
+      summary: retrieve price list plan
+      description: Retrieve product prices for your subscription plan
+      tags:
+        - v1-system
+      operationId: SystemPricelist
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/PricingRules"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/system/health":
+    get:
+      summary: retrieve jurisdictions health status
+      description: Retrieve the health information for the official sources based
+        on usage
+      tags:
+        - v1-system
+      operationId: HealthCheck
+      parameters: []
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/CommercialRegistersHealth"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/company/search/name/{country}/{name}":
+    get:
+      summary: conduct company-index search by name
+      description: Perform a company index search with a certain country and company
+        name
+      tags:
+        - v1-company
+      operationId: CompanySearchName
+      parameters:
+        - name: country
+          in: path
+          description: ISO_3166-1_alpha-2 representation of a country name - 2 chars
+          required: true
+          schema:
+            type: string
+            format: string
+        - name: name
+          in: path
+          description: company name
+          required: true
+          schema:
+            type: string
+            format: string
+        - name: extension
+          in: query
+          description: Extension parameter
+          required: false
+          schema:
+            type: string
+            format: string
+        - name: limit
+          in: query
+          description: number of search results
+          required: false
+          schema:
+            type: integer
+            format: int64
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/Companies"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/company/search/number/{country}/{number}":
+    get:
+      summary: conduct company-index search by registration number
+      description: Perform a company index search with a certain country and company
+        registration number
+      tags:
+        - v1-company
+      operationId: CompanySearchNumber
+      parameters:
+        - name: country
+          in: path
+          description: ISO_3166-1_alpha-2 representation of a country name - 2 chars
+          required: true
+          schema:
+            type: string
+            format: string
+        - name: number
+          in: path
+          description: company registration number
+          required: true
+          schema:
+            type: string
+            format: string
+        - name: extension
+          in: query
+          description: Extension parameter
+          required: false
+          schema:
+            type: string
+            format: string
+        - name: limit
+          in: query
+          description: number of search results
+          required: false
+          schema:
+            type: integer
+            format: int64
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/Companies"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/company/deepsearch/name/{country}/{name}":
+    get:
+      summary: conduct live search by name
+      description: Perform a live search with a certain country and company name
+      tags:
+        - v1-company
+      operationId: CompanyDeepsearchName
+      parameters:
+        - name: country
+          in: path
+          description: ISO_3166-1_alpha-2 representation of a country name - 2 chars
+          required: true
+          schema:
+            type: string
+            format: string
+        - name: name
+          in: path
+          description: company name
+          required: true
+          schema:
+            type: string
+            format: string
+        - name: extension
+          in: query
+          description: Extension parameter
+          required: false
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/Companies"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/company/deepsearch/number/{country}/{number}":
+    get:
+      summary: conduct live search by registration number
+      description: Perform a live search with a certain country and company registration
+        number
+      tags:
+        - v1-company
+      operationId: CompanyDeepsearchNumber
+      parameters:
+        - name: country
+          in: path
+          description: ISO_3166-1_alpha-2 representation of a country name - 2 chars
+          required: true
+          schema:
+            type: string
+            format: string
+        - name: number
+          in: path
+          description: company registration number
+          required: true
+          schema:
+            type: string
+            format: string
+        - name: extension
+          in: query
+          description: Extension parameter
+          required: false
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/Companies"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/company/deepsearch/lei/{number}":
+    get:
+      summary: conduct live search search by LEI number
+      description: Perform a live search with a certain LEI (Legal Entity Identifier)
+        number
+      tags:
+        - v1-company
+      operationId: CompanyDeepsearchLEI
+      parameters:
+        - name: number
+          in: path
+          description: lei number
+          required: true
+          schema:
+            type: string
+            format: string
+        - name: page
+          in: query
+          description: Pagination for the ISIN number results (1000 numbers per page)
+          required: false
+          example: 1
+          schema:
+            type: integer
+            format: int32
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/LeiLookupResult"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/company/deepsearch/isin":
+    post:
+      summary: conduct live search search by ISIN number
+      description: Perform a live search for stock exchange listings with a certain
+        ISIN (International Securities Identification Number) number
+      tags:
+        - v1-company
+      operationId: CompanyDeepsearchISIN
+      parameters: []
+      requestBody:
+        description: ISIN bulk deepsearch parameters
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                isin:
+                  description: A list of ISIN numbers seperated by comma (maximum)
+                    is 100
+                  type: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/IsinLookupResult"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/company/{id}/{dataset}":
+    get:
+      summary: retrieve datasets
+      description: Retrieve company details by company id. The level of details are
+        defined by the dataset parameter
+      tags:
+        - v1-company
+      operationId: CompanyIdDataset
+      parameters:
+        - name: id
+          in: path
+          description: company master data by id
+          required: true
+          schema:
+            type: string
+            format: string
+        - name: check_stock_listing
+          in: query
+          description: Try to retrieve additional stock information for this company.
+            (Only available on refresh)
+          required: false
+          schema:
+            type: boolean
+        - name: dataset
+          in: path
+          description: company master data by id
+          required: true
+          schema:
+            type: string
+            format: string
+            enum:
+              - ''
+              - mini
+              - master
+              - full
+              - refresh
+              - beneficial_owners
+        - name: lang
+          in: query
+          description: Optional data translation (only available in limited jurisdictions)
+          required: false
+          schema:
+            type: string
+            format: string
+            enum:
+              - ''
+              - OG
+              - EN
+              - FR
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/Company"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/company/{id}/super/{country}":
+    get:
+      summary: retrieve super dataset
+      description: Retrieve company superdata by country and company registration
+        number
+      tags:
+        - v1-company
+      operationId: CompanyIdSuper
+      parameters:
+        - name: id
+          in: path
+          description: company superdata by id
+          required: true
+          schema:
+            type: string
+            format: string
+        - name: country
+          in: path
+          description: ISO_3166-1_alpha-2 representation of a country name - 2 chars
+          required: true
+          schema:
+            type: string
+            format: string
+        - name: lang
+          in: query
+          description: Optional data translation (only available in limited jurisdictions)
+          required: false
+          schema:
+            type: string
+            format: string
+            enum:
+              - ''
+              - OG
+              - EN
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/Companies"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/company/announcement/{id}":
+    get:
+      summary: retrieve announcement details
+      description: Retrieve full announcement data identified by announcement id
+      tags:
+        - v1-company
+      operationId: CompanyAnnouncement
+      parameters:
+        - name: id
+          in: path
+          description: announcement hex ID
+          required: true
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/Announcements"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/company/{id}/announcements":
+    get:
+      summary: retrieve announcements for a legal entity
+      description: Retrieve the announcements filed to the business register from
+        a company by company id
+      tags:
+        - v1-company
+      operationId: CompanyIdAnnouncements
+      parameters:
+        - name: id
+          in: path
+          description: company hex ID
+          required: true
+          schema:
+            type: string
+            format: string
+        - name: limit
+          in: query
+          description: limit of announcements in response (default 10)
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: offset
+          in: query
+          description: to paginate through results (default 0)
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: data
+          in: query
+          description: If this parameter is set to false, you will only receive ids,
+            and no additional data about announcements and no hits to the metric will
+            be counted. (and potentially minimizing your costs)
+          required: false
+          schema:
+            type: boolean
+            format: ''
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/Announcements"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/company/notification/register/{id}":
+    post:
+      summary: register announcement notification
+      description: Register a new callback URL to get notifications about a certain
+        company by company id
+      tags:
+        - v1-company
+      operationId: CompanyNotificationRegister
+      parameters:
+        - name: id
+          in: path
+          description: Company Hex ID
+          required: true
+          schema:
+            type: string
+            format: string
+      requestBody:
+        description: Callback URL where the notifications will be sent to
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                callbackUrl:
+                  description: Callback URL
+                  type: string
+              required:
+                - callbackUrl
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/RegisterWebhookResult"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/company/notification/unregister/{id}":
+    post:
+      summary: unregister announcement notification
+      description: Deactivate a previously registered company monitor identified by
+        notification id
+      tags:
+        - v1-company
+      operationId: CompanyNotificationUnregister
+      parameters:
+        - name: id
+          in: path
+          description: Registration id of monitoring request record
+          required: true
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          description: Empty response body
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/company/notification/list/{id}":
+    get:
+      summary: retrieve registered notifications for a legal entity
+      description: Retrieve the list of registered notifications for a certain company
+        by company id
+      tags:
+        - v1-company
+      operationId: CompanyNotificationId
+      parameters:
+        - name: id
+          in: path
+          description: Company Hex ID
+          required: true
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/MonitorWebhooks"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/company/notification/list":
+    get:
+      summary: retrieve registered notifications
+      description: Retrieve the list of registered callback URLs for the authenticated
+        api key
+      tags:
+        - v1-company
+      operationId: CompanyNotificationList
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/MonitorWebhooks"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/company/monitoring/register/{id}":
+    post:
+      summary: register a monitor for a legal entity
+      description: Register a new perpetual company monitoring by company id and a
+        callback URL to get monitoring alerts
+      tags:
+        - v1-company
+      operationId: CompanyMonitorRegister
+      parameters:
+        - name: id
+          in: path
+          description: Company Hex ID
+          required: true
+          schema:
+            type: string
+            format: string
+      requestBody:
+        description: Callback URL where the notifications will be sent to
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                callbackUrl:
+                  description: Callback URL
+                  type: string
+                changeType:
+                  description: ChangeType to monitor
+                  type: string
+              required:
+                - changeType
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/RegisterWebhookResult"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/company/monitoring/unregister/{id}":
+    post:
+      summary: unregister a monitor for a legal entity
+      description: Deactivate a previously registered perpetual company monitoring
+        identified by monitoring id
+      tags:
+        - v1-company
+      operationId: CompanyMonitorUnregister
+      parameters:
+        - name: id
+          in: path
+          description: Registration id of monitoring request record
+          required: true
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          description: Empty response body
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/company/monitoring/list/{id}":
+    get:
+      summary: check monitor status for a legal entity
+      description: Retrieve status of the possibly registered perpetual company monitoring
+        by company id
+      tags:
+        - v1-company
+      operationId: CompanyMonitorId
+      parameters:
+        - name: id
+          in: path
+          description: Company Hex ID
+          required: true
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/MonitorWebhooks"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/company/monitoring/list":
+    get:
+      summary: retrieve list of monitors
+      description: Retrieve the list of registered perpetual company monitorings for
+        the authenticated api key
+      tags:
+        - v1-company
+      operationId: CompanyMonitorList
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/MonitorWebhooks"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/company/monitoring/changeTypes":
+    get:
+      summary: retrieve list of monitoring changetypes
+      description: Retrieve the list of available ChangeTypes to subscribe to
+      tags:
+        - v1-company
+      operationId: CompanyMonitorChangeTypesList
+      security:
+        - user_key: []
+      responses:
+        '200':
+          description: List of ChangeTypes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/product/catalog/{country}":
+    get:
+      summary: retrieve catalog of products
+      description: Retrieve the purchasable product (SKU) catalog with metadata for
+        a certain country
+      tags:
+        - v1-product
+      operationId: ProductCatalog
+      parameters:
+        - name: country
+          in: path
+          description: two letter country code in upper case
+          required: true
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/ProductCatalog"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/product/search/{subjectId}":
+    get:
+      summary: retrieve list of products by legal entity
+      description: Retrieve the list of possiblle products (SKUs) by company id
+      tags:
+        - v1-product
+      operationId: ProductSearch
+      parameters:
+        - name: subjectId
+          in: path
+          description: Subject (e.g. Company) ID - 32 character hex value
+          required: true
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/Products"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/product/availability/{sku}/{subjectId}":
+    get:
+      summary: check product availability for a legal entity
+      description: Perform an availability search by certain product (SKU) and company
+        id
+      tags:
+        - v1-product
+      operationId: ProductAvailability
+      parameters:
+        - name: sku
+          in: path
+          description: SKU - 9 character value from a Product object
+          required: true
+          schema:
+            type: string
+            format: string
+        - name: subjectId
+          in: path
+          description: Subject (e.g. Company) ID - 32 character hex value
+          required: true
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/Product"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/product/order/{sku}/{subjectId}":
+    post:
+      summary: order a product
+      description: Place and order by certain product (SKU) and company id
+      operationId: ProductOrder
+      tags:
+        - v1-product
+      parameters:
+        - name: sku
+          in: path
+          description: SKU - 9 character value from a Product object
+          required: true
+          schema:
+            type: string
+            format: string
+        - name: subjectId
+          in: path
+          description: Subject (e.g. Company) ID - 32 character hex value
+          required: true
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/ProductOrder"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/product/order/{sku}/{option}/{subjectId}":
+    post:
+      summary: order a product with additional parameters
+      description: Place and order by certain product (SKU) and company id and various
+        parameters
+      tags:
+        - v1-product
+      operationId: ProductOrderWithOption
+      parameters:
+        - name: sku
+          in: path
+          description: SKU - 9 character value from a Product object
+          required: true
+          schema:
+            type: string
+            format: string
+        - name: option
+          in: path
+          description: Product option (e.g. Accounts year) from a previous Availability
+            call
+          required: true
+          schema:
+            type: string
+            format: string
+        - name: subjectId
+          in: path
+          description: Subject (e.g. Company) ID - 32 character hex value
+          required: true
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/ProductOrder"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/product/order/concierge":
+    post:
+      summary: order KYB Assist
+      description: Place an order for a KYC assist service
+      tags:
+        - v1-product
+      operationId: ProductOrderConcierge
+      parameters: []
+      requestBody:
+        description: Parameters for the concierge order
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                subjectId:
+                  description: Kompanyid of the company you want to place the order
+                    for
+                  type: string
+                  example: 'null'
+                priority:
+                  description: 'Priority of order: standard/express are allowed'
+                  type: string
+                  example: standard
+                country:
+                  description: Two letter ISO code of the country of the company
+                  type: string
+                  example: 'null'
+                companyName:
+                  description: Name of the company for which a document should be
+                    ordered. (Not required if subjectId is given)
+                  type: string
+                  example: 'null'
+                registerNumber:
+                  description: Registration number of the company for which a document
+                    should be ordered. (Not required if subjectId is given)
+                  type: string
+                  example: 'null'
+                informationRequirements:
+                  description: Requirements on what document or information should
+                    be provided. Please be very precise
+                  type: string
+                  example: 'null'
+                registerData:
+                  description: If you want register data of the company to be retrieved
+                  type: boolean
+                  example: false
+                financialData:
+                  description: If you want financial data of the company to be retrieved
+                  type: boolean
+                  example: false
+                historicInformation:
+                  description: If you want historical data of the company to be retrieved
+                  type: boolean
+                  example: false
+                locationInvestigation:
+                  description: If the companies residency should be investigated
+                  type: boolean
+                  example: false
+                costConfirmation:
+                  description: If the concierge cost should require additional confirmation
+                    if a threshold is reached (configured on your plan)
+                  type: boolean
+                  example: false
+                contactEmail:
+                  description: Contact E-Mail, will be contacted if concierge costs
+                    are exceeding the threshhold configured on your plan
+                  type: string
+                  example: 'null'
+                contactPhone:
+                  description: Contact phone, will be contacted if concierge costs
+                    are exceeding the threshhold configured on your plan
+                  type: string
+                  example: 'null'
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/ProductOrder"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/product/order/ubo":
+    post:
+      summary: order UBO discovery report
+      description: Place an order for a UBO (ultimate beneficial owner) discovery
+        report
+      tags:
+        - v1-product
+      operationId: ProductOrderUbo
+      parameters: []
+      requestBody:
+        description: Parameters for the UBO order
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - subjectId
+              properties:
+                subjectId:
+                  description: KYC API Id (32 byte hexid) of the company you want
+                    to place the order for
+                  type: string
+                  example: 'null'
+                callbackUrl:
+                  description: An optional callback URL to which updates about the
+                    order will be sent (for instance if credits are exceeded)
+                  type: string
+                  example: 'null'
+                credits:
+                  description: Specify a maximum amount of credits which should be
+                    used. To disable use -1
+                  type: number
+                  example: -1
+                strategy:
+                  description: Choose a matching strategy. Available options (FULL,LEVELS)
+                  type: string
+                  example: FULL
+                levels:
+                  description: Define a threshold for different levels of crawling
+                  type: string
+                  example: '25,50'
+                threshold:
+                  description: Define a minimum threshold for UBOs
+                  type: string
+                  example: '0'
+                includeDocs:
+                  description: Include purchase of register document to ubo report
+                  type: boolean
+                  example: false
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/ProductOrder"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/product/ubo/legalforms":
+    get:
+      summary: Get supported LegalForms
+      description: Get current list of supported legal forms for UBO
+      tags:
+        - v1-product
+      operationId: ProductUboLegalForms
+      parameters:
+        - name: country
+          in: query
+          description: Optional two letter country code in upper case
+          required: false
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/UboLegalForms"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/product/order/landregister":
+    post:
+      summary: order landregister report
+      description: Place an order for a landregister report
+      tags:
+        - v1-product
+      operationId: ProductOrderLandregister
+      parameters: []
+      requestBody:
+        description: Parameters for the landregister order
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - subjectId
+              properties:
+                country:
+                  description: Two letter ISO country code
+                  type: string
+                  example: AT
+                propertyId:
+                  description: The identification of the property
+                  type: string
+                  example: '22222'
+                districtId:
+                  description: The identification number of the district in which
+                    the property is located
+                  type: String
+                  example: '72127'
+                type:
+                  description: Choose the report type (PDF,JSON)
+                  type: string
+                  example: PDF
+                  enum:
+                    - PDF
+                    - JSON
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/ProductOrder"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/product/extraction/{orderId}":
+    post:
+      summary: order extraction
+      description: Retrieve the content in structured text format for by certain product
+        (SKU)
+      operationId: ProductExtractionOrder
+      tags:
+        - v1-product
+      parameters:
+        - name: orderId
+          in: path
+          description: ID of the ProductOrder as returned from a /product/buy call -
+            32 character hex value
+          required: true
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/ProductOrder"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/product/extraction/catalog":
+    get:
+      summary: retrieve catalog of products for extraction
+      description: Retrieve the list of products that are enabled for the extraction
+        endpoint
+      operationId: ProductExtractionCatalog
+      tags:
+        - v1-product
+      parameters: []
+      security:
+        - user_key: []
+      responses:
+        '200':
+          type: array
+          items:
+            type: string
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/product/status/{orderId}":
+    get:
+      summary: check order status
+      description: Retrieve status of the order by order id
+      tags:
+        - v1-product
+      operationId: ProductStatus
+      parameters:
+        - name: orderId
+          in: path
+          description: ID of the ProductOrder as returned from a /product/buy call -
+            32 character hex value
+          required: true
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/ProductOrder"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/product/update/{action}/{orderId}":
+    post:
+      summary: update order status
+      description: Update status of the order by order id
+      tags:
+        - v1-product
+      operationId: ProductUpdateAction
+      parameters:
+        - name: action
+          in: path
+          description: The action you want to perform for the order
+          required: true
+          schema:
+            type: string
+            format: string
+        - name: orderId
+          in: path
+          description: ID of the ProductOrder as returned from a /product/buy call -
+            32 character hex value
+          required: true
+          schema:
+            type: string
+            format: string
+      requestBody:
+        description: Parameters for the update order endpoint
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                credits:
+                  description: Specify an amount of credits which should be added
+                    to the order
+                  type: number
+                  example: 100
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/ProductOrder"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/product/notifier/{orderId}/{type}/{uri}":
+    post:
+      summary: create order notifier
+      description: Register a new order status change notifier with a certain order
+        id
+      tags:
+        - v1-product
+      operationId: ProductNotifierCreate
+      parameters:
+        - name: orderId
+          in: path
+          description: ID of the ProductOrder as returned from a /product/buy call -
+            32 character hex value
+          required: true
+          schema:
+            type: string
+            format: string
+        - name: type
+          in: path
+          description: Type of the notifier - indicates the action the notifier will
+            perform. Currently GET and POST are supported which performs an http(s)
+            GET/POST to the supplied uri with appended notifierId= and orderId= parameters
+            when the order processing is completed. Upon the POST request the order
+            object is sent as a JSON body
+          required: true
+          schema:
+            type: string
+            format: string
+        - name: uri
+          in: path
+          description: URI of the notifier for the 'complete' action. Currently only
+            a GET method HTTP(s) URL is supported. 1 to 250 characters long. Every slash
+            in the URI must be replaced by a ~
+          required: true
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/ProductOrderNotifier"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/product/notifier/{notifierId}":
+    get:
+      summary: check notifier status
+      description: Retrieve metadata for an order status notifier by notification
+        id
+      tags:
+        - v1-product
+      operationId: ProductNotifier
+      parameters:
+        - name: notifierId
+          in: path
+          description: ID of the ProductOrderNotifier as returned from a /notifier POST
+            call - 32 character hex value
+          required: true
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/ProductOrderNotifier"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/product/{orderId}":
+    get:
+      summary: retrieve product
+      description: Retrieve the document or structured data associated with a completed
+        order by order id
+      tags:
+        - v1-product
+      operationId: ProductRetrieve
+      parameters:
+        - name: orderId
+          in: path
+          description: ID of the ProductOrder as returned from a /product/buy call -
+            32 character hex value
+          required: true
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/ProductDelivery"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/proof/{proofId}":
+    get:
+      summary: Retrieves the blockchain & timestamp proof (depends on the customer's
+        plan) attached with a request
+      description: Retrieve all details attached with a proof of request
+      tags:
+        - v1-proof
+      operationId: ProofRetrieve
+      parameters:
+        - name: proofId
+          in: path
+          description: The proofId that was returned during the request
+          required: true
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/ProofDelivery"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/proof":
+    get:
+      summary: Retrieves a history of proofs
+      description: Retrieve all proofs saved during a time period
+      tags:
+        - v1-proof
+      operationId: ProofHistory
+      parameters:
+        - name: startDate
+          in: query
+          description: Only proofs saved after this date will be returned
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-01-01 00:00:00'
+        - name: endDate
+          in: query
+          description: Only proofs saved before this date will be returned
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2022-12-31 23:59:59'
+        - name: type
+          in: query
+          description: Only proofs with this type will be returned
+          required: false
+          schema:
+            type: string
+            format: string
+            enum:
+              - search
+              - data
+              - document
+        - name: requestId
+          in: query
+          description: Only proofs associated with a certain requestId will be returned
+          required: false
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/ProofHistoryList"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/pepsanction/order/{type}/{search}":
+    post:
+      summary: order PEP/sanction/adverse media report
+      description: Perform a PEP sanction check by business or person name and various
+        parameters
+      tags:
+        - v1-pepsanction
+      operationId: PepOrder
+      parameters:
+        - name: type
+          in: path
+          description: Type (Business or Person) of the requested Pep Sanction Check
+          required: true
+          schema:
+            type: string
+            format: string
+            enum:
+              - ''
+              - B
+              - P
+        - name: search
+          in: path
+          description: Search string for the Pep Sanction Check
+          required: true
+          schema:
+            type: string
+            format: string
+      requestBody:
+        description: Optional parameters to enhance search
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                GivenName:
+                  description: Optional parameter for first name when doing a person
+                    search
+                  type: string
+                  example: 'null'
+                MiddleName:
+                  description: Optional parameter for middle name when doing a person
+                    search
+                  type: string
+                  example: 'null'
+                FamilyName:
+                  description: Optional parameter for last name when doing a person
+                    search
+                  type: string
+                  example: 'null'
+                DOB:
+                  description: Optional parameter for date of birth name when doing
+                    a person search, needs to be YYYY-MM-DD (Only applicable for person
+                    search)
+                  type: string
+                  example: 'null'
+                CountryCode:
+                  description: Optional ISO two-letter code of Country to assist in
+                    identifying matches based upon location/geography.
+                  type: string
+                  example: 'null'
+                Sex:
+                  description: Optionally provide M or F as the persons sex (Only
+                    applicable for person search).
+                  type: string
+                  example: 'null'
+                Address:
+                  description: Optionally provide the address of the person or organisation
+                    as a one line string
+                  type: string
+                  example: 'null'
+                Age:
+                  description: Optionally provide the age of the queried person (Only
+                    applicable for person search).
+                  type: string
+                  example: 'null'
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/Product"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/pepsanction/retrieve/{id}":
+    get:
+      summary: retrieve a PEP/sanction/adverse media report
+      description: Retrieve the document or structured data (based on accept element
+        of the header) associated with a completed PEP sanction order by order id
+      tags:
+        - v1-pepsanction
+      operationId: PepRetrieve
+      parameters:
+        - name: accept
+          in: header
+          description: The type (pdf or json) in which the check should be returned
+          required: false
+          schema:
+            type: string
+            format: string
+            enum:
+              - application/json
+              - application/pdf
+            default: application/json
+        - name: id
+          in: path
+          description: The id of the ordered Pep Sanction Check (id as returned by orderPepSanction
+            call)
+          required: true
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/PepSanctionCheck"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/vat-verification/lookup/{country}":
+    post:
+      summary: lookup for VAT
+      description: Perform a VAT lookup with a certain TIN number
+      tags:
+        - v1-vat-verification
+      operationId: VatLookup
+      parameters:
+        - name: country
+          in: path
+          description: ISO_3166-1_alpha-2 representation of a country name - 2 chars
+          required: true
+          schema:
+            type: string
+            format: string
+      requestBody:
+        description: Company name
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  description: Company name
+                  type: string
+                  example: 'null'
+                address:
+                  description: Company address
+                  type: string
+                  example: 'null'
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/VatLookupResult"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/vat-verification/basic-check/{country}":
+    post:
+      summary: conduct EU-VAT level one check
+      description: Perform a basic VAT  verification against VIES with a certain VAT
+        number
+      tags:
+        - v1-vat-verification
+      operationId: VatBasic
+      parameters:
+        - name: country
+          in: path
+          description: ISO_3166-1_alpha-2 representation of a country name - 2 chars
+          required: true
+          schema:
+            type: string
+            format: string
+      requestBody:
+        description: VAT number and the company details
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - vatNumber
+              properties:
+                vatNumber:
+                  description: VAT number to validate
+                  type: string
+                companyName:
+                  description: Company name
+                  type: string
+                companyNumber:
+                  description: official company number
+                  type: string
+                companyAddress:
+                  description: company address lines
+                  type: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/VatVerificationResult"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/vat-verification/leveltwo-check/{country}":
+    post:
+      summary: conduct EU-VAT level two check
+      description: Perform a second level VAT  verification against BMF Austria  with
+        a certain VAT number
+      tags:
+        - v1-vat-verification
+      operationId: VatLevelTwo
+      parameters:
+        - name: country
+          in: path
+          description: ISO_3166-1_alpha-2 representation of a country name - 2 chars
+          required: true
+          schema:
+            type: string
+            format: string
+      requestBody:
+        description: VAT number and confirmation request
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - vatNumber
+              properties:
+                vatNumber:
+                  description: VAT number to validate
+                  type: string
+                confirmation:
+                  description: If a confirmation document should be ordered
+                  type: boolean
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/SecondLevelVatVerificationResult"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/vat-verification/comprehensive-check/{country}":
+    post:
+      summary: conduct EU-VAT comprehensive check
+      description: Perform a comprehensive VAT verification with a certain VAT number.
+        Additionally to the basic VAT verification it will perform company index or
+        live search for company details
+      tags:
+        - v1-vat-verification
+      operationId: VatComprehensive
+      parameters:
+        - name: country
+          in: path
+          description: ISO_3166-1_alpha-2 representation of a country name - 2 chars
+          required: true
+          schema:
+            type: string
+            format: string
+      requestBody:
+        description: VAT number and the company details
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - vatNumber
+              properties:
+                vatNumber:
+                  description: VAT number to validate
+                  type: string
+                companyName:
+                  description: Company name
+                  type: string
+                companyNumber:
+                  description: official company number
+                  type: string
+                companyAddress:
+                  description: company address lines
+                  type: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/VatVerificationResult"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/ein-verification/lookup":
+    get:
+      summary: lookup for an EIN by legal entity name
+      description: Perform an EIN lookup with a certain company name
+      tags:
+        - v1-ein-verification
+      operationId: EinVerificationLookup
+      parameters:
+        - name: name
+          in: query
+          description: Business name of the company
+          required: true
+          schema:
+            type: string
+            format: string
+        - name: state
+          in: query
+          description: Optional state parameter to improve results. (Two letter code
+            for example CA or US-CA for California)
+          required: false
+          schema:
+            type: string
+            format: string
+        - name: zip
+          in: query
+          description: Optional zip code parameter to improve results. (Zip is preferred
+            over state)
+          required: false
+          schema:
+            type: string
+            format: string
+        - name: tight
+          in: query
+          description: Optional parameter to do tight matching. (Only the best match
+            will be returned rather then the top 5)
+          required: false
+          schema:
+            type: boolean
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/EinLookupResult"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/ein-verification/basic-check":
+    get:
+      summary: conduct EIN basic check
+      description: Perform a basic EIN verification with a certain EIN tax number
+      tags:
+        - v1-ein-verification
+      operationId: EinVerificationBasic
+      parameters:
+        - name: ein
+          in: query
+          description: Nine letter EIN number with or without hyphens
+          required: true
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/EinBasicResult"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/ein-verification/comprehensive-check":
+    get:
+      summary: conduct EIN comprehensive check
+      description: Perform a comprehensive EIN verification with a certain EIN tax
+        number. Additionally to the basic EIN verification it will perform company
+        index or live search for company details
+      tags:
+        - v1-ein-verification
+      operationId: EinVerificationComprehensive
+      parameters:
+        - name: ein
+          in: query
+          description: Nine letter EIN number with or without hyphens
+          required: true
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/EinComprehensiveResult"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/tin-verification/name-lookup":
+    get:
+      summary: lookup for a legal entity name by TIN number
+      description: Perform a TIN lookup with a certain TIN number
+      tags:
+        - v1-tin-verification
+      operationId: TinVerificationNameLookup
+      parameters:
+        - name: tin
+          in: query
+          description: Nine letter TIN number with or without hyphens
+          required: true
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/TinNameLookupResult"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/tin-verification/basic-check":
+    get:
+      summary: conduct TIN basic check
+      description: Perform a basic TIN verification with a certain company name and
+        TIN number
+      tags:
+        - v1-tin-verification
+      operationId: TinVerificationBasicCheck
+      parameters:
+        - name: tin
+          in: query
+          description: Nine letter TIN number with or without hyphens
+          required: true
+          schema:
+            type: string
+            format: string
+        - name: name
+          in: query
+          description: Company Name
+          required: true
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/TinBasicCheckResult"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/tin-verification/comprehensive-check":
+    get:
+      summary: conduct TIN comprehensive check
+      description: Perform a comprehensive TIN verification with a certain company
+        name and TIN number. Additionally to the basic TIN verification it will perform
+        company index or live search for company details
+      tags:
+        - v1-tin-verification
+      operationId: TinVerificationComprehensiveCheck
+      parameters:
+        - name: tin
+          in: query
+          description: Nine letter TIN number with or without hyphens
+          required: true
+          schema:
+            type: string
+            format: string
+        - name: name
+          in: query
+          description: Company Name
+          required: true
+          schema:
+            type: string
+            format: string
+        - name: state
+          in: query
+          description: Optional state parameter to improve results. (Two letter code
+            for example CA or US-CA for California)
+          required: false
+          schema:
+            type: string
+            format: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/TinComprehensiveCheckResult"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/nif-verification/basic-check/{country}":
+    post:
+      summary: conduct NIF basic check
+      description: Perform a basic NIF verification with a certain NIF tax number
+      tags:
+        - v1-nif-verification
+      operationId: NifBasic
+      parameters:
+        - name: country
+          in: path
+          description: ISO_3166-1_alpha-2 representation of a country name - 2 chars
+          required: true
+          schema:
+            type: string
+            format: string
+      requestBody:
+        description: Company details
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - nifNumber
+              properties:
+                nifNumber:
+                  description: NIF number to validate
+                  type: string
+                companyName:
+                  description: Company name
+                  type: string
+                companyAddress:
+                  description: company address lines
+                  type: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/NifVerificationBasicResult"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/nif-verification/comprehensive-check/{country}":
+    post:
+      summary: conduct NIF comprehensive check
+      description: Perform a comprehensive NIF verification with a certain NIF tax
+        number
+      tags:
+        - v1-nif-verification
+      operationId: NifComprehensive
+      parameters:
+        - name: country
+          in: path
+          description: ISO_3166-1_alpha-2 representation of a country name - 2 chars
+          required: true
+          schema:
+            type: string
+            format: string
+      requestBody:
+        description: Company details
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - nifNumber
+              properties:
+                nifNumber:
+                  description: NIF number to validate
+                  type: string
+                companyName:
+                  description: Company name
+                  type: string
+                companyAddress:
+                  description: company address lines
+                  type: string
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/NifVerificationCompResult"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/iban-verification/check-iban":
+    post:
+      summary: conduct IBAN basic check
+      description: Perform a basic IBAN structure validation
+      tags:
+        - v1-iban-verification
+      operationId: IbanBasic
+      requestBody:
+        description: IBAN number
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - ibanNumber
+              properties:
+                ibanNumber:
+                  description: IBAN number to validate
+                  type: string
+                  example: AT483200000012345864
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/IbanVerificationResult"
+        default:
+          "$ref": "#/components/responses/Error"
+  "/api/v1/iban-verification/comprehensive-check-iban":
+    post:
+      summary: conduct IBAN comprehensive check
+      description: Perform a comprehensive IBAN verification
+      tags:
+        - v1-iban-verification
+      operationId: IbanComprehensive
+      requestBody:
+        description: IBAN number
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - ibanNumber
+              properties:
+                ibanNumber:
+                  description: IBAN number to validate
+                  type: string
+                  example: AT483200000012345864
+      security:
+        - user_key: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/IbanComprehensiveVerificationResult"
+        default:
+          "$ref": "#/components/responses/Error"

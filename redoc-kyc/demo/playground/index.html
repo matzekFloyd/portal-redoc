@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ReDoc</title>
+  <style>
+    body {
+      --sticky-header-height: 100px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .dummy-sticky-header {
+      position: sticky;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: var(--sticky-header-height);
+      background: #eee;
+      z-index: 10;
+    }
+
+    .menu-content,
+    .try-console-holder {
+      height: calc(100dvh - var(--sticky-header-height)) !important;
+      top: var(--sticky-header-height) !important;
+    }
+
+    @media (max-width: 1440px) {
+      body {
+        --sticky-header-height: 60px;
+      }
+    }
+
+    redoc {
+      display: block;
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
+  <link rel="stylesheet" href="http://localhost.kompany.is:8085/css/bootstrap5/kompany.css?t=20210729160705"/>
+</head>
+
+<body>
+  <div class="dummy-sticky-header globalheader"></div>
+  <redoc id="example"></redoc>
+</body>
+
+</html>
