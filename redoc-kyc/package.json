@@ -32,7 +32,6 @@
     "unit": "jest --coverage",
     "e2e": "cypress run",
     "e2e-ci": "cypress run --record",
-    "bundlesize": "bundlesize",
     "cy:open": "cypress open",
     "bundle:clean": "rimraf bundles",
     "bundle:standalone": "webpack --env.standalone --mode=production",
@@ -84,7 +83,6 @@
     "babel-loader": "^8.1.0",
     "babel-plugin-styled-components": "^1.10.7",
     "beautify-benchmark": "^0.2.4",
-    "bundlesize": "^0.18.0",
     "conventional-changelog-cli": "^2.0.34",
     "copy-webpack-plugin": "^6.0.3",
     "core-js": "^3.6.5",
@@ -159,12 +157,6 @@
     "tslib": "^2.0.0",
     "url-template": "^2.0.8"
   },
-  "bundlesize": [
-    {
-      "path": "./bundles/redoc.standalone.js",
-      "maxSize": "300 kB"
-    }
-  ],
   "jest": {
     "setupFilesAfterEnv": [
       "<rootDir>/src/setupTests.ts"
