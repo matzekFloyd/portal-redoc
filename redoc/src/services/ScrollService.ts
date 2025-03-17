@@ -1,8 +1,8 @@
 import { bind } from 'decko';
-import { EventEmitter } from 'eventemitter3';
+import * as EventEmitter from 'eventemitter3';
 
 import { IS_BROWSER, querySelector, Throttle } from '../utils';
-import type { RedocNormalizedOptions } from './RedocNormalizedOptions';
+import { RedocNormalizedOptions } from './RedocNormalizedOptions';
 
 const EVENT = 'scroll';
 

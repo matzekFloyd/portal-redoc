@@ -1,12 +1,46 @@
-import type { OpenAPISpec, OpenAPIPaths, OpenAPITag, OpenAPISchema } from '../types';
-import { isOperationName, JsonPointer, alphabeticallyByProp } from '../utils';
+import {
+  OpenAPIOperation,
+  OpenAPIParameter,
+  OpenAPISpec,
+  OpenAPITag,
+  Referenced,
+  OpenAPIServer,
+  OpenAPIPaths,
+} from '../types';
+import {
+  isOperationName,
+  SECURITY_DEFINITIONS_COMPONENT_NAME,
+  setSecuritySchemePrefix,
+  JsonPointer,
+} from '../utils';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { GroupModel, OperationModel } from './models';
-import type { OpenAPIParser } from './OpenAPIParser';
-import type { RedocNormalizedOptions } from './RedocNormalizedOptions';
-import type { ContentItemModel, TagGroup, TagInfo, TagsInfoMap } from './types';
+import { OpenAPIParser } from './OpenAPIParser';
+import { RedocNormalizedOptions } from './RedocNormalizedOptions';
+
+export type TagInfo = OpenAPITag & {
+  operations: ExtendedOpenAPIOperation[];
+  used?: boolean;
+};
+
+export type ExtendedOpenAPIOperation = {
+  pointer: string;
+  pathName: string;
+  httpVerb: string;
+  pathParameters: Array<Referenced<OpenAPIParameter>>;
+  pathServers: Array<OpenAPIServer> | undefined;
+  isWebhook: boolean;
+} & OpenAPIOperation;
+
+export type TagsInfoMap = Record<string, TagInfo>;
+
+export interface TagGroup {
+  name: string;
+  tags: string[];
+}
 
 export const GROUP_DEPTH = 0;
+export type ContentItemModel = GroupModel | OperationModel;
 
 export class MenuBuilder {
   /**
@@ -19,7 +53,7 @@ export class MenuBuilder {
     const spec = parser.spec;
 
     const items: ContentItemModel[] = [];
-    const tagsMap = MenuBuilder.getTagsWithOperations(parser, spec);
+    const tagsMap = MenuBuilder.getTagsWithOperations(spec);
     items.push(...MenuBuilder.addMarkdownItems(spec.info.description || '', undefined, 1, options));
     if (spec['x-tagGroups'] && spec['x-tagGroups'].length > 0) {
       items.push(
@@ -41,7 +75,7 @@ export class MenuBuilder {
     initialDepth: number,
     options: RedocNormalizedOptions,
   ): ContentItemModel[] {
-    const renderer = new MarkdownRenderer(options, parent?.id);
+    const renderer = new MarkdownRenderer(options);
     const headings = renderer.extractHeadings(description || '');
 
     if (headings.length && parent && parent.description) {
@@ -58,7 +92,14 @@ export class MenuBuilder {
         if (heading.items) {
           group.items = mapHeadingsDeep(group, heading.items, depth + 1);
         }
-
+        if (
+          MarkdownRenderer.containsComponent(
+            group.description || '',
+            SECURITY_DEFINITIONS_COMPONENT_NAME,
+          )
+        ) {
+          setSecuritySchemePrefix(group.id + '/');
+        }
         return group;
       });
 
@@ -89,11 +130,9 @@ export class MenuBuilder {
 
   /**
    * Returns array of OperationsGroup items for the tags of the group or for all tags
-   * @param parser
    * @param tagsMap tags info returned from `getTagsWithOperations`
    * @param parent parent item
    * @param group group which this tag belongs to. if not provided gets all tags
-   * @param options normalized options
    */
   static getTagsItems(
     parser: OpenAPIParser,
@@ -137,35 +176,21 @@ export class MenuBuilder {
         continue;
       }
 
-      const relatedSchemas = this.getTagRelatedSchema({
-        parser,
-        tag,
-        parent: item,
-      });
-
       item.items = [
-        ...relatedSchemas,
         ...MenuBuilder.addMarkdownItems(tag.description || '', item, item.depth + 1, options),
         ...this.getOperationsItems(parser, item, tag, item.depth + 1, options),
       ];
 
       res.push(item);
     }
-
-    if (options.sortTagsAlphabetically) {
-      res.sort(alphabeticallyByProp<GroupModel | OperationModel>('name'));
-    }
-
     return res;
   }
 
   /**
    * Returns array of Operation items for the tag
-   * @param parser
    * @param parent parent OperationsGroup
    * @param tag tag info returned from `getTagsWithOperations`
    * @param depth items depth
-   * @param options - normalized options
    */
   static getOperationsItems(
     parser: OpenAPIParser,
@@ -184,44 +209,30 @@ export class MenuBuilder {
       operation.depth = depth;
       res.push(operation);
     }
-
-    if (options.sortOperationsAlphabetically) {
-      res.sort(alphabeticallyByProp<OperationModel>('name'));
-    }
-
     return res;
   }
 
   /**
    * collects tags and maps each tag to list of operations belonging to this tag
    */
-  static getTagsWithOperations(parser: OpenAPIParser, spec: OpenAPISpec): TagsInfoMap {
+  static getTagsWithOperations(spec: OpenAPISpec): TagsInfoMap {
     const tags: TagsInfoMap = {};
-    const webhooks = spec['x-webhooks'] || spec.webhooks;
     for (const tag of spec.tags || []) {
       tags[tag.name] = { ...tag, operations: [] };
     }
 
-    if (webhooks) {
-      getTags(parser, webhooks, true);
+    getTags(spec.paths);
+    if (spec['x-webhooks']) {
+      getTags(spec['x-webhooks'], true);
     }
 
-    if (spec.paths) {
-      getTags(parser, spec.paths);
-    }
-
-    function getTags(parser: OpenAPIParser, paths: OpenAPIPaths, isWebhook?: boolean) {
+    function getTags(paths: OpenAPIPaths, isWebhook?: boolean) {
       for (const pathName of Object.keys(paths)) {
         const path = paths[pathName];
         const operations = Object.keys(path).filter(isOperationName);
         for (const operationName of operations) {
           const operationInfo = path[operationName];
-          if (path.$ref) {
-            const { resolved: resolvedPaths } = parser.deref<OpenAPIPaths>(path as OpenAPIPaths);
-            getTags(parser, { [pathName]: resolvedPaths }, isWebhook);
-            continue;
-          }
-          let operationTags = operationInfo?.tags;
+          let operationTags = operationInfo.tags;
 
           if (!operationTags || !operationTags.length) {
             // empty tag
@@ -254,34 +265,5 @@ export class MenuBuilder {
       }
     }
     return tags;
-  }
-
-  static getTagRelatedSchema({
-    parser,
-    tag,
-    parent,
-  }: {
-    parser: OpenAPIParser;
-    tag: TagInfo;
-    parent: GroupModel;
-  }): GroupModel[] {
-    return Object.entries(parser.spec.components?.schemas || {})
-      .map(([schemaName, schema]) => {
-        const schemaTags = schema['x-tags'];
-        if (!schemaTags?.includes(tag.name)) return null;
-
-        const item = new GroupModel(
-          'schema',
-          {
-            name: schemaName,
-            'x-displayName': `${(schema as OpenAPISchema).title || schemaName}`,
-            description: `<SchemaDefinition showWriteOnly={true} schemaRef="#/components/schemas/${schemaName}" />`,
-          } as OpenAPITag,
-          parent,
-        );
-        item.depth = parent.depth + 1;
-        return item;
-      })
-      .filter(Boolean) as GroupModel[];
   }
 }

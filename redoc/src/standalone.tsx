@@ -1,16 +1,15 @@
 import * as React from 'react';
-import { createRoot, hydrateRoot } from 'react-dom/client';
-import { configure } from 'mobx';
+import { hydrate as hydrateComponent, render } from 'react-dom';
+import { configure } from "mobx"
 
 import { Redoc, RedocStandalone } from './components/';
-import { AppStore } from './services/AppStore';
+import { AppStore, StoreState } from './services/AppStore';
 import { debugTime, debugTimeEnd } from './utils/debug';
 import { querySelector } from './utils/dom';
-import type { StoreState } from './services';
 
 configure({
-  useProxies: 'ifavailable',
-});
+  useProxies: 'ifavailable'
+})
 
 export { Redoc, AppStore } from '.';
 
@@ -33,8 +32,7 @@ function parseOptionsFromElement(element: Element) {
   const res = {};
   for (const attrName in attrMap) {
     const optionName = attrName.replace(/-(.)/g, (_, $1) => $1.toUpperCase());
-    const optionValue = attrMap[attrName];
-    res[optionName] = attrName === 'theme' ? JSON.parse(optionValue) : optionValue;
+    res[optionName] = attrMap[attrName];
     // TODO: normalize options
   }
   return res;
@@ -59,8 +57,7 @@ export function init(
     spec = specOrSpecUrl;
   }
 
-  const root = createRoot(element!);
-  root.render(
+  render(
     React.createElement(
       RedocStandalone,
       {
@@ -71,13 +68,8 @@ export function init(
       },
       ['Loading...'],
     ),
+    element,
   );
-}
-
-export function destroy(element: Element | null = querySelector('redoc')): void {
-  if (element) {
-    createRoot(element).unmount();
-  }
 }
 
 export function hydrate(
@@ -91,7 +83,7 @@ export function hydrate(
 
   setTimeout(() => {
     debugTime('Redoc hydrate');
-    hydrateRoot(element!, <Redoc store={store} />, { onRecoverableError: callback });
+    hydrateComponent(<Redoc store={store} />, element, callback);
     debugTimeEnd('Redoc hydrate');
   }, 0);
 }

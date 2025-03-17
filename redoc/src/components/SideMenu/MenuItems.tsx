@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react';
 import * as React from 'react';
 
-import type { IMenuItem } from '../../services';
+import { IMenuItem } from '../../services';
 
 import { MenuItem } from './MenuItem';
 import { MenuItemUl } from './styled.elements';
@@ -25,8 +25,8 @@ export class MenuItems extends React.Component<MenuItemsProps> {
       <MenuItemUl
         className={className}
         style={this.props.style}
-        $expanded={expanded}
-        {...(root ? { role: 'menu' } : {})}
+        expanded={expanded}
+        {...(root ? { role: 'navigation' } : {})}
       >
         {items.map((item, idx) => (
           <MenuItem key={idx} item={item} onActivate={this.props.onActivate} />

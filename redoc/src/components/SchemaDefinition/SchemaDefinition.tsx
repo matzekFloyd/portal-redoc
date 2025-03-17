@@ -14,7 +14,6 @@ export interface ObjectDescriptionProps {
   exampleRef?: string;
   showReadOnly?: boolean;
   showWriteOnly?: boolean;
-  showExample?: boolean;
   parser: OpenAPIParser;
   options: RedocNormalizedOptions;
 }
@@ -54,7 +53,7 @@ export class SchemaDefinition extends React.PureComponent<ObjectDescriptionProps
   }
 
   render() {
-    const { showReadOnly = true, showWriteOnly = false, showExample = true } = this.props;
+    const { showReadOnly = true, showWriteOnly = false } = this.props;
     return (
       <Section>
         <Row>
@@ -65,30 +64,18 @@ export class SchemaDefinition extends React.PureComponent<ObjectDescriptionProps
               schema={this.mediaModel.schema}
             />
           </MiddlePanel>
-          {showExample && (
-            <DarkRightPanel>
-              <MediaSamplesWrap>
-                <MediaTypeSamples
-                  renderDropdown={this.renderDropdown}
-                  mediaType={this.mediaModel}
-                />
-              </MediaSamplesWrap>
-            </DarkRightPanel>
-          )}
+          <DarkRightPanel>
+            <MediaSamplesWrap>
+              <MediaTypeSamples renderDropdown={this.renderDropdown} mediaType={this.mediaModel} />
+            </MediaSamplesWrap>
+          </DarkRightPanel>
         </Row>
       </Section>
     );
   }
 
   private renderDropdown = props => {
-    return (
-      <DropdownOrLabel
-        Label={MimeLabel}
-        Dropdown={InvertedSimpleDropdown}
-        {...props}
-        variant="dark"
-      />
-    );
+    return <DropdownOrLabel Label={MimeLabel} Dropdown={InvertedSimpleDropdown} {...props} />;
   };
 }
 

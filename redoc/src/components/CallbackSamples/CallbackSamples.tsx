@@ -21,14 +21,7 @@ export class CallbackSamples extends React.Component<CallbackSamplesProps> {
   context: RedocNormalizedOptions;
 
   private renderDropdown = props => {
-    return (
-      <DropdownOrLabel
-        Label={MimeLabel}
-        Dropdown={InvertedSimpleDropdown}
-        {...props}
-        variant="dark"
-      />
-    );
+    return <DropdownOrLabel Label={MimeLabel} Dropdown={InvertedSimpleDropdown} {...props} />;
   };
 
   render() {

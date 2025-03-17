@@ -1,6 +1,5 @@
 import styled from '../styled-components';
 import { darken } from 'polished';
-import { deprecatedCss } from './mixins';
 
 export const OneOfList = styled.div`
   margin: 0 0 3px 0;
@@ -15,7 +14,7 @@ export const OneOfLabel = styled.span`
 }
 `;
 
-export const OneOfButton = styled.button<{ $active: boolean; $deprecated: boolean }>`
+export const OneOfButton = styled.button<{ active: boolean }>`
   display: inline-block;
   margin-right: 10px;
   margin-bottom: 5px;
@@ -29,10 +28,8 @@ export const OneOfButton = styled.button<{ $active: boolean; $deprecated: boolea
     box-shadow: 0 0 0 1px ${props => props.theme.colors.primary.main};
   }
 
-  ${({ $deprecated }) => ($deprecated && deprecatedCss) || ''};
-
   ${props => {
-    if (props.$active) {
+    if (props.active) {
       return `
       color: white;
       background-color: ${props.theme.colors.primary.main};

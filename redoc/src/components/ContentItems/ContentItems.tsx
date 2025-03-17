@@ -3,9 +3,9 @@ import * as React from 'react';
 
 import { ExternalDocumentation } from '../ExternalDocumentation/ExternalDocumentation';
 import { AdvancedMarkdown } from '../Markdown/AdvancedMarkdown';
-import { H2, H3, MiddlePanel, Row, Section, ShareLink } from '../../common-elements';
-import type { ContentItemModel } from '../../services';
-import type { GroupModel, OperationModel } from '../../services/models';
+import { H1, H2, MiddlePanel, Row, Section, ShareLink } from '../../common-elements';
+import { ContentItemModel } from '../../services/MenuBuilder';
+import { GroupModel, OperationModel } from '../../services/models';
 import { Operation } from '../Operation/Operation';
 
 @observer
@@ -51,7 +51,7 @@ export class ContentItem extends React.Component<ContentItemProps> {
     return (
       <>
         {content && (
-          <Section id={item.id} $underlined={item.type === 'operation'}>
+          <Section id={item.id} underlined={item.type === 'operation'}>
             {content}
           </Section>
         )}
@@ -61,29 +61,25 @@ export class ContentItem extends React.Component<ContentItemProps> {
   }
 }
 
-const middlePanelWrap = component => <MiddlePanel $compact={true}>{component}</MiddlePanel>;
+const middlePanelWrap = component => <MiddlePanel compact={true}>{component}</MiddlePanel>;
 
 @observer
 export class SectionItem extends React.Component<ContentItemProps> {
   render() {
     const { name, description, externalDocs, level } = this.props.item as GroupModel;
 
-    const Header = level === 2 ? H3 : H2;
+    const Header = level === 2 ? H2 : H1;
     return (
       <>
         <Row>
-          <MiddlePanel $compact={false}>
+          <MiddlePanel compact={false}>
             <Header>
               <ShareLink to={this.props.item.id} />
               {name}
             </Header>
           </MiddlePanel>
         </Row>
-        <AdvancedMarkdown
-          parentId={this.props.item.id}
-          source={description || ''}
-          htmlWrap={middlePanelWrap}
-        />
+        <AdvancedMarkdown source={description || ''} htmlWrap={middlePanelWrap} />
         {externalDocs && (
           <Row>
             <MiddlePanel>

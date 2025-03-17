@@ -6,7 +6,6 @@ import { SourceCodeWithCopy } from '../SourceCode/SourceCode';
 
 import { RightPanelHeader, Tab, TabList, TabPanel, Tabs } from '../../common-elements';
 import { OptionsContext } from '../OptionsProvider';
-import { l } from '../../services/Labels';
 
 export interface RequestSamplesProps {
   operation: OperationModel;
@@ -27,7 +26,7 @@ export class RequestSamples extends React.Component<RequestSamplesProps> {
     return (
       (hasSamples && (
         <div>
-          <RightPanelHeader> {l('requestSamples')} </RightPanelHeader>
+          <RightPanelHeader> Request samples </RightPanelHeader>
 
           <Tabs defaultIndex={0}>
             <TabList hidden={hideTabList}>

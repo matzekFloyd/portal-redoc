@@ -1,5 +1,11 @@
 import { action, observable, makeObservable } from 'mobx';
 
+import { IMenuItem } from '../MenuStore';
+import { GroupModel } from './Group.model';
+import { SecurityRequirementModel } from './SecurityRequirement';
+
+import { OpenAPIExternalDocumentation, OpenAPIServer, OpenAPIXCodeSample } from '../../types';
+
 import {
   extractExtensions,
   getOperationSummary,
@@ -11,20 +17,14 @@ import {
   sortByField,
   sortByRequired,
 } from '../../utils';
-
-import { GroupModel } from './Group.model';
-import { SecurityRequirementModel } from './SecurityRequirement';
+import { ContentItemModel, ExtendedOpenAPIOperation } from '../MenuBuilder';
+import { OpenAPIParser } from '../OpenAPIParser';
+import { RedocNormalizedOptions } from '../RedocNormalizedOptions';
 import { CallbackModel } from './Callback';
 import { FieldModel } from './Field';
+import { MediaContentModel } from './MediaContent';
 import { RequestBodyModel } from './RequestBody';
 import { ResponseModel } from './Response';
-import { SideNavStyleEnum } from '../types';
-
-import type { OpenAPIExternalDocumentation, OpenAPIServer, OpenAPIXCodeSample } from '../../types';
-import type { OpenAPIParser } from '../OpenAPIParser';
-import type { RedocNormalizedOptions } from '../RedocNormalizedOptions';
-import type { MediaContentModel } from './MediaContent';
-import type { ContentItemModel, ExtendedOpenAPIOperation, IMenuItem } from '../types';
 
 export interface XPayloadSample {
   lang: 'payload';
@@ -49,7 +49,6 @@ export class OperationModel implements IMenuItem {
   id: string;
   absoluteIdx?: number;
   name: string;
-  sidebarLabel: string;
   description?: string;
   type = 'operation' as const;
 
@@ -69,7 +68,6 @@ export class OperationModel implements IMenuItem {
 
   pointer: string;
   operationId?: string;
-  operationHash?: string;
   httpVerb: string;
   deprecated: boolean;
   path: string;
@@ -78,7 +76,6 @@ export class OperationModel implements IMenuItem {
   extensions: Record<string, any>;
   isCallback: boolean;
   isWebhook: boolean;
-  isEvent: boolean;
 
   constructor(
     private parser: OpenAPIParser,
@@ -101,38 +98,29 @@ export class OperationModel implements IMenuItem {
     this.operationId = operationSpec.operationId;
     this.path = operationSpec.pathName;
     this.isCallback = isCallback;
-    this.isWebhook = operationSpec.isWebhook;
-    this.isEvent = this.isCallback || this.isWebhook;
+    this.isWebhook = !!operationSpec.isWebhook;
 
     this.name = getOperationSummary(operationSpec);
-
-    this.sidebarLabel =
-      options.sideNavStyle === SideNavStyleEnum.IdOnly
-        ? this.operationId || this.path
-        : options.sideNavStyle === SideNavStyleEnum.PathOnly
-        ? this.path
-        : this.name;
 
     if (this.isCallback) {
       // NOTE: Callbacks by default should not inherit the specification's global `security` definition.
       // Can be defined individually per-callback in the specification. Defaults to none.
       this.security = (operationSpec.security || []).map(
-        security => new SecurityRequirementModel(security, parser),
+        (security) => new SecurityRequirementModel(security, parser),
       );
 
       // TODO: update getting pathInfo for overriding servers on path level
       this.servers = normalizeServers('', operationSpec.servers || operationSpec.pathServers || []);
     } else {
-      this.operationHash = operationSpec.operationId && 'operation/' + operationSpec.operationId;
       this.id =
         operationSpec.operationId !== undefined
-          ? (parent ? parent.id + '/' : '') + this.operationHash
+          ? 'operation/' + operationSpec.operationId
           : parent !== undefined
           ? parent.id + this.pointer
           : this.pointer;
 
       this.security = (operationSpec.security || parser.spec.security || []).map(
-        security => new SecurityRequirementModel(security, parser),
+        (security) => new SecurityRequirementModel(security, parser),
       );
 
       this.servers = normalizeServers(
@@ -184,18 +172,12 @@ export class OperationModel implements IMenuItem {
   get requestBody() {
     return (
       this.operationSpec.requestBody &&
-      new RequestBodyModel({
-        parser: this.parser,
-        infoOrRef: this.operationSpec.requestBody,
-        options: this.options,
-        isEvent: this.isEvent,
-      })
+      new RequestBodyModel(this.parser, this.operationSpec.requestBody, this.options)
     );
   }
 
   @memoize
   get codeSamples() {
-    const { payloadSampleIdx, hideRequestPayloadSample } = this.options;
     let samples: Array<OpenAPIXCodeSample | XPayloadSample> =
       this.operationSpec['x-codeSamples'] || this.operationSpec['x-code-samples'] || [];
 
@@ -205,8 +187,8 @@ export class OperationModel implements IMenuItem {
     }
 
     const requestBodyContent = this.requestBody && this.requestBody.content;
-    if (requestBodyContent && requestBodyContent.hasSample && !hideRequestPayloadSample) {
-      const insertInx = Math.min(samples.length, payloadSampleIdx);
+    if (requestBodyContent && requestBodyContent.hasSample) {
+      const insertInx = Math.min(samples.length, this.options.payloadSampleIdx);
 
       samples = [
         ...samples.slice(0, insertInx),
@@ -230,7 +212,7 @@ export class OperationModel implements IMenuItem {
       this.operationSpec.pathParameters,
       this.operationSpec.parameters,
       // TODO: fix pointer
-    ).map(paramOrRef => new FieldModel(this.parser, paramOrRef, this.pointer, this.options));
+    ).map((paramOrRef) => new FieldModel(this.parser, paramOrRef, this.pointer, this.options));
 
     if (this.options.sortPropsAlphabetically) {
       return sortByField(_parameters, 'name');
@@ -246,7 +228,7 @@ export class OperationModel implements IMenuItem {
   get responses() {
     let hasSuccessResponses = false;
     return Object.keys(this.operationSpec.responses || [])
-      .filter(code => {
+      .filter((code) => {
         if (code === 'default') {
           return true;
         }
@@ -257,21 +239,20 @@ export class OperationModel implements IMenuItem {
 
         return isStatusCode(code);
       }) // filter out other props (e.g. x-props)
-      .map(code => {
-        return new ResponseModel({
-          parser: this.parser,
+      .map((code) => {
+        return new ResponseModel(
+          this.parser,
           code,
-          defaultAsError: hasSuccessResponses,
-          infoOrRef: this.operationSpec.responses[code],
-          options: this.options,
-          isEvent: this.isEvent,
-        });
+          hasSuccessResponses,
+          this.operationSpec.responses[code],
+          this.options,
+        );
       });
   }
 
   @memoize
   get callbacks() {
-    return Object.keys(this.operationSpec.callbacks || []).map(callbackEventName => {
+    return Object.keys(this.operationSpec.callbacks || []).map((callbackEventName) => {
       return new CallbackModel(
         this.parser,
         callbackEventName,

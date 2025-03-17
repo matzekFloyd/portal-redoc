@@ -1,11 +1,11 @@
 import * as Sampler from 'openapi-sampler';
 
-import type { OpenAPIMediaType } from '../../types';
-import type { RedocNormalizedOptions } from '../RedocNormalizedOptions';
+import { OpenAPIMediaType } from '../../types';
+import { RedocNormalizedOptions } from '../RedocNormalizedOptions';
 import { SchemaModel } from './Schema';
 
 import { isJsonLike, mapValues } from '../../utils';
-import type { OpenAPIParser } from '../OpenAPIParser';
+import { OpenAPIParser } from '../OpenAPIParser';
 import { ExampleModel } from './Example';
 
 export class MediaTypeModel {
@@ -14,7 +14,6 @@ export class MediaTypeModel {
   name: string;
   isRequestType: boolean;
   onlyRequiredInSamples: boolean;
-  generatedPayloadSamplesMaxDepth: number;
 
   /**
    * @param isRequestType needed to know if skipe RO/RW fields in objects
@@ -30,17 +29,16 @@ export class MediaTypeModel {
     this.isRequestType = isRequestType;
     this.schema = info.schema && new SchemaModel(parser, info.schema, '', options);
     this.onlyRequiredInSamples = options.onlyRequiredInSamples;
-    this.generatedPayloadSamplesMaxDepth = options.generatedPayloadSamplesMaxDepth;
     if (info.examples !== undefined) {
       this.examples = mapValues(
         info.examples,
-        example => new ExampleModel(parser, example, name, info.encoding),
+        (example) => new ExampleModel(parser, example, name, info.encoding),
       );
     } else if (info.example !== undefined) {
       this.examples = {
         default: new ExampleModel(
           parser,
-          { value: parser.deref(info.example).resolved },
+          { value: parser.shalowDeref(info.example) },
           name,
           info.encoding,
         ),
@@ -53,14 +51,15 @@ export class MediaTypeModel {
   generateExample(parser: OpenAPIParser, info: OpenAPIMediaType) {
     const samplerOptions = {
       skipReadOnly: this.isRequestType,
-      skipWriteOnly: !this.isRequestType,
       skipNonRequired: this.isRequestType && this.onlyRequiredInSamples,
-      maxSampleDepth: this.generatedPayloadSamplesMaxDepth,
+      skipWriteOnly: !this.isRequestType,
+      maxSampleDepth: 10,
     };
     if (this.schema && this.schema.oneOf) {
       this.examples = {};
       for (const subSchema of this.schema.oneOf) {
-        const sample = Sampler.sample(subSchema.rawSchema as any, samplerOptions, parser.spec);
+        // @ts-ignore
+        const sample = Sampler.sample(subSchema.rawSchema, samplerOptions, parser.spec);
 
         if (this.schema.discriminatorProp && typeof sample === 'object' && sample) {
           sample[this.schema.discriminatorProp] = subSchema.title;
@@ -80,7 +79,8 @@ export class MediaTypeModel {
         default: new ExampleModel(
           parser,
           {
-            value: Sampler.sample(info.schema as any, samplerOptions, parser.spec),
+            // @ts-ignore
+            value: Sampler.sample(info.schema, samplerOptions, parser.spec),
           },
           this.name,
           info.encoding,

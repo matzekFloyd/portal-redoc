@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react';
 import * as React from 'react';
 
-import { DropdownProps, DropdownOption } from '../../common-elements/Dropdown';
+import { DropdownProps, DropdownOption } from '../../common-elements/dropdown';
 import { DropdownLabel, DropdownWrapper } from '../PayloadSamples/styled.elements';
 
 export interface GenericChildrenSwitcherProps<T> {
@@ -32,8 +32,8 @@ export class GenericChildrenSwitcher<T> extends React.Component<
     };
   }
 
-  switchItem = ({ idx }: DropdownOption) => {
-    if (this.props.items && idx !== undefined) {
+  switchItem = ({ idx }) => {
+    if (this.props.items) {
       this.setState({
         activeItemIdx: idx,
       });

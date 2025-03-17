@@ -1,7 +1,7 @@
 describe('Standalone bundle test', () => {
   function baseCheck(name: string, url: string) {
     describe(name, () => {
-      beforeEach(() => {
+      before(() => {
         cy.visit(url);
       });
 
@@ -16,6 +16,5 @@ describe('Standalone bundle test', () => {
   }
 
   baseCheck('OAS3 mode', 'e2e/standalone.html');
-  baseCheck('OAS3.1 mode', 'e2e/standalone-3-1.html');
   baseCheck('OAS2 compatibility mode', 'e2e/standalone-compatibility.html');
 });

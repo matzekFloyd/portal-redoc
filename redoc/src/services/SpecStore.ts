@@ -1,12 +1,11 @@
-import type { OpenAPIExternalDocumentation, OpenAPIPath, OpenAPISpec, Referenced } from '../types';
+import { OpenAPIExternalDocumentation, OpenAPISpec } from '../types';
 
-import { MenuBuilder } from './MenuBuilder';
+import { ContentItemModel, MenuBuilder } from './MenuBuilder';
 import { ApiInfoModel } from './models/ApiInfo';
 import { WebhookModel } from './models/Webhook';
 import { SecuritySchemesModel } from './models/SecuritySchemes';
 import { OpenAPIParser } from './OpenAPIParser';
-import type { RedocNormalizedOptions } from './RedocNormalizedOptions';
-import type { ContentItemModel } from './types';
+import { RedocNormalizedOptions } from './RedocNormalizedOptions';
 /**
  * Store that contains all the specification related information in the form of tree
  */
@@ -25,14 +24,10 @@ export class SpecStore {
     private options: RedocNormalizedOptions,
   ) {
     this.parser = new OpenAPIParser(spec, specUrl, options);
-    this.info = new ApiInfoModel(this.parser, this.options);
+    this.info = new ApiInfoModel(this.parser);
     this.externalDocs = this.parser.spec.externalDocs;
     this.contentItems = MenuBuilder.buildStructure(this.parser, this.options);
     this.securitySchemes = new SecuritySchemesModel(this.parser);
-    const webhookPath: Referenced<OpenAPIPath> = {
-      ...this.parser?.spec?.['x-webhooks'],
-      ...this.parser?.spec.webhooks,
-    };
-    this.webhooks = new WebhookModel(this.parser, options, webhookPath);
+    this.webhooks = new WebhookModel(this.parser, options, this.parser.spec['x-webhooks']);
   }
 }

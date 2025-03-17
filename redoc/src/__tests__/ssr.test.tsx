@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { renderToString } from 'react-dom/server';
-import * as yaml from 'js-yaml';
+import * as yaml from 'yaml-js';
 import { createStore, Redoc } from '../';
 
 import { readFileSync } from 'fs';
@@ -10,7 +10,7 @@ import { resolve } from 'path';
 
 describe('SSR', () => {
   it('should render in SSR mode', async () => {
-    const spec = yaml.load(readFileSync(resolve(__dirname, '../../demo/openapi.yaml'), 'utf-8'));
+    const spec = yaml.load(readFileSync(resolve(__dirname, '../../demo/openapi.yaml')));
     const store = await createStore(spec, '');
     expect(() => {
       renderToString(<Redoc store={store} />);
