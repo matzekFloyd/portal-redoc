@@ -8,7 +8,7 @@
  * @param {any} options
  * @returns {string}
  */
-export const generateMethod = (options) => {
+export const generateMethod = options => {
   const method = options.method;
   if (!method) return '';
   const type = {
@@ -18,26 +18,26 @@ export const generateMethod = (options) => {
     PATCH: ' -X PATCH',
     DELETE: ' -X DELETE',
     HEAD: ' -X HEAD',
-    OPTIONS: ' -X OPTIONS'
+    OPTIONS: ' -X OPTIONS',
   };
   return type[method.toUpperCase()] || '';
-}
+};
 
 /**
  * @export
  * @param {any} val
- * @returns true if the envirtonment supports Headers and val is of instance Headers
+ * @returns true if the environment supports Headers and val is of instance Headers
  */
-export const isInstanceOfHeaders = (val) => {
-  if (typeof Headers !== "function"){
+export const isInstanceOfHeaders = val => {
+  if (typeof Headers !== 'function') {
     /**
      * Environment does not support the Headers constructor
-     * old internet explorer?
+     * old Internet Explorer?
      */
     return false;
   }
   return val instanceof Headers;
-}
+};
 
 /**
  * @typedef {Object} HeaderParams
@@ -56,24 +56,24 @@ const getHeaderString = (name, val) => ` -H "${name}: ${val.replace(/(\\|")/g, '
  */
 export const generateHeader = (options = {}, shouldHideUserKey) => {
   // @ts-ignore
-  const  headers  = options.headers;
+  const headers = options.headers;
   let isEncode = false;
   let headerParam = '';
-  if (isInstanceOfHeaders(headers)){
+  if (isInstanceOfHeaders(headers)) {
     headers.forEach((val, name) => {
       if (name.toLocaleLowerCase() !== 'content-length') {
-        if(!(name.toLocaleLowerCase() === 'user_key' && shouldHideUserKey)) {
+        if (!(name.toLocaleLowerCase() === 'user_key' && shouldHideUserKey)) {
           headerParam += getHeaderString(name, val);
         }
       }
-      if (name.toLocaleLowerCase() === 'accept-encoding'){
+      if (name.toLocaleLowerCase() === 'accept-encoding') {
         isEncode = true;
       }
-    })
-  } else if (headers){
+    });
+  } else if (headers) {
     Object.keys(headers).map(name => {
       if (name.toLocaleLowerCase() !== 'content-length') {
-        if(!(name.toLocaleLowerCase() === 'user_key' && shouldHideUserKey)) {
+        if (!(name.toLocaleLowerCase() === 'user_key' && shouldHideUserKey)) {
           headerParam += getHeaderString(name, headers[name]);
         }
       }
@@ -86,7 +86,7 @@ export const generateHeader = (options = {}, shouldHideUserKey) => {
     params: headerParam,
     isEncode,
   };
-}
+};
 
 /**
  *
@@ -97,7 +97,7 @@ export const generateHeader = (options = {}, shouldHideUserKey) => {
  */
 export function generateBody(body) {
   if (!body) return '';
-  if (typeof body === "object"){
+  if (typeof body === 'object') {
     return ` --data-binary '${JSON.stringify(body)}'`;
   }
   return ` --data-binary '${body}'`;
@@ -128,16 +128,18 @@ export const fetchToCurl = (requestInfo, requestInit, shouldHideUserKey) => {
    * initialization with an empty object is done here to
    * keep everything backwards compatible to 0.4.0 and below
    */
-  if (typeof requestInfo === "string" || requestInfo instanceof URL) {
+  if (typeof requestInfo === 'string' || requestInfo instanceof URL) {
     url = requestInfo;
     options = requestInit || {};
   } else {
-    url = (requestInfo || {}).url
-    options = requestInfo || {}
+    url = (requestInfo || {}).url;
+    options = requestInfo || {};
   }
   const { body } = options;
   const headers = generateHeader(options, shouldHideUserKey);
-  return `curl '${url}'${generateMethod(options)}${headers.params || ''}${generateBody(body)}${generateCompress(headers.isEncode)}`;
-}
+  return `curl '${url}'${generateMethod(options)}${headers.params || ''}${generateBody(
+    body,
+  )}${generateCompress(headers.isEncode)}`;
+};
 
 export default fetchToCurl;

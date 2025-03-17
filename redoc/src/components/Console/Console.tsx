@@ -1,7 +1,13 @@
 import * as React from 'react';
 import { useContext, useEffect, useState } from 'react';
 import { observe } from 'mobx';
-import { ClipboardService, MenuStore, OperationModel } from '../../services';
+import {
+  ClipboardService,
+  MenuStore,
+  OperationModel,
+  SecuritySchemeModel,
+  SpecStore,
+} from '../../services';
 import { ConsoleContext, ConsoleContextObject } from './ConsoleContext';
 import { fetchToCurl } from './fetchToCurl';
 import { Tooltip } from '../../common-elements/Tooltip';
@@ -10,6 +16,7 @@ import ConsoleStyle from './components/ConsoleStyle';
 import {
   ENV,
   getPathAndQuery,
+  getEvaApiUrl,
   getUrl,
   tryParse,
   valuesWithoutOperationPrefix,
@@ -19,6 +26,11 @@ import { ApplicationsAsOptions } from './components/ApplicationsAsOptions';
 import { UserKeysAsOptions } from './components/UserKeysAsOptions';
 import { RequestBodyFields } from './components/RequestBodyFields';
 import { Parameter } from './components/Parameter';
+import { ApplicationFields, ParameterType, ParameterValues } from "./types";
+
+import { CopyToClipboard } from './components/CopyToClipboard';
+import { ReturnToDocumentation } from './components/ReturnToDocumentation';
+import { useFetch } from '../../utils/fetch';
 import { ParameterType, ParameterValues } from './types';
 
 export interface ConsoleStyleProps {
@@ -28,9 +40,18 @@ export interface ConsoleStyleProps {
 
 export interface ConsoleProps extends ConsoleStyleProps {
   menu: MenuStore;
+  spec: SpecStore;
 }
 
-export function Console({ menu }) {
+/**
+ *
+ * @param props
+ * @constructor
+ */
+export function Console(props: ConsoleProps) {
+  const { menu, spec } = props;
+  //TODO apps cant be fetched like this
+  const apps = useFetch<ApplicationFields[]>(`/account/applications`);
   const context = useContext(ConsoleContext) as ConsoleContextObject;
   const tryOutFullWidth = true;
   const [processing, setProcessing] = useState(false);
@@ -46,19 +67,25 @@ export function Console({ menu }) {
   const [operation, setOperation] = useState<OperationModel | null>(null);
   const [applications, setApplications] = useState<{ applications: any[] }>({ applications: [] });
   const [userAppKey, setUserKey] = useState('');
+  const [requestBodyHeight, setRequestBodyHeight] = useState(0);
   const [curlRequest, setCurlRequest] = useState('');
   const [showTooltip, setShowTooltip] = useState(false);
   const [showTooltipResponse, setShowTooltipResponse] = useState(false);
   const [parameterValues, setParameterValues] = useState<ParameterValues | {}>(
     context.getOperationParameterValues(operation?.operationId as any),
   );
+  //TODO too many context specific states
   const [show, setShow] = useState(false);
   const [internalUserKeys, setInternalUserKeys] = useState([]);
   const [userHasCCFeature, setUserHasCCFeature] = useState(false);
+  const [showCostWarning, setShowCostWarning] = useState(false);
   const [mimeTypes, setMimeTypes] = useState<string[]>([]);
   const [pdfHeader, setPdfHeader] = useState(false);
+  const [applications, setApplications] = useState<ApplicationFields[]>();
 
   useEffect(() => {
+    setRequestBodyHeightDimension();
+    //TODO, this is KYC specific, should be extracted
     (async function () {
       const URL = ENV + '/kycapi/user/threescale/getUserApplications';
       const response = await fetch(URL, { credentials: 'include' });
@@ -85,7 +112,13 @@ export function Console({ menu }) {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = observe(menu, 'activeItemIdx', (change) => {
+    window.addEventListener('resize', setRequestBodyHeightDimension);
+    return () => window.removeEventListener('resize', setRequestBodyHeightDimension);
+  }, []);
+
+  useEffect(() => {
+    // noinspection TypeScriptValidateTypes
+    const unsubscribe = observe(menu, 'activeItemIdx', change => {
       const item = menu.flatItems[change.newValue as number];
       if (item instanceof OperationModel) {
         setOperation(item as OperationModel);
@@ -108,6 +141,13 @@ export function Console({ menu }) {
     return () => unsubscribe();
   }, [menu]);
 
+  //TODO not good
+  useEffect(() => {
+    if (apps.data) {
+      setApplications(apps.data as ApplicationFields[]);
+    }
+  }, [apps.data]);
+
   const setParameter = (type: ParameterType, name, value) => {
     const newValues = {
       ...parameterValues,
@@ -120,7 +160,7 @@ export function Console({ menu }) {
     context.storeOperationParameterValues(operation?.operationId, newValues);
   };
 
-  const updateState = (input) => {
+  const updateState = input => {
     setUserKey(input);
   };
 
@@ -181,7 +221,9 @@ export function Console({ menu }) {
       updateState(input);
     }
 
+    //TODO, this is not good, 2 different urls for KYC/EVA
     const baseUrl = getUrl();
+    //const baseUrl = getEvaApiUrl();
 
     const requestURL = getPathAndQuery(
       `${baseUrl}${operation.path}`,
@@ -192,7 +234,13 @@ export function Console({ menu }) {
     setRequestUrl(requestURL);
 
     const myHeaders = new Headers();
-    myHeaders.append('user_key', userAppKey);
+    const securitySchemes: SecuritySchemeModel[] = spec.securitySchemes.schemes;
+    securitySchemes.forEach(scheme => {
+      if (scheme.apiKey?.name) {
+        myHeaders.append(scheme.apiKey?.name, userAppKey);
+      }
+    });
+
     let requestOptions: RequestInit = {
       method: operation.httpVerb,
       headers: myHeaders,
@@ -251,6 +299,8 @@ export function Console({ menu }) {
 
     const res = await fetch(requestURL, requestOptions);
     let shouldHideUserKey = false;
+    //TODO this is KYC specific
+
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     if (applications?.applications && applications?.applications[0]?.shouldHideUserKey) {
@@ -266,6 +316,7 @@ export function Console({ menu }) {
     if (res.headers.get('content-type') !== 'application/json') {
       const blob_result = await res.blob();
       if (res.status === 200) {
+        // noinspection TypeScriptUnresolvedReference
         let url = window.URL || window.webkitURL;
         const objectURL = url.createObjectURL(blob_result);
         let html = `<a href="${objectURL}" target="_blank">Click here to download the pdf</a>`;
@@ -309,7 +360,11 @@ export function Console({ menu }) {
     }
   };
 
-  const handleChange = (e) => {
+  const setRequestBodyHeightDimension = () => {
+    setRequestBodyHeight(window.innerHeight);
+  };
+
+  const handleChange = e => {
     if (e.target.value === 'addNewKey') {
       // @ts-ignore
       const select = document.getElementById('choose_plan')[0];
@@ -320,11 +375,13 @@ export function Console({ menu }) {
       input.type = 'text';
       select?.parentNode?.replaceWith(input);
       input.focus();
-      input.addEventListener('change', (_) => {
+      input.addEventListener('change', _ => {
         setUserKey(input.value);
       });
     } else {
       setUserKey(e.target.value);
+      //TODO this is not good, 2 different states for EVA, KYC
+      setShowCostWarning(true);
       setShow(true);
     }
   };
@@ -349,8 +406,13 @@ export function Console({ menu }) {
     textField.remove();
   };
 
+  //TODO this is not good, two different states for KYC and EVA...
   const closeAction = () => {
     setShow(false);
+  }
+
+  const clostCostWarning = () => {
+    setShowCostWarning(false);
   };
 
   const paramByOperation = (type: ParameterType, paramName) => {
@@ -376,25 +438,21 @@ export function Console({ menu }) {
     return (
       <ConsoleStyle fullWidth={tryOutFullWidth} className="try-console-holder">
         <div className={'upper-part col-6'}>
-          <p
-            className={'navigation-page-right mb-50'}
-            style={{ cursor: 'pointer' }}
-            onClick={() => clear(true)}
-          >
-            SEE DOCUMENTATION
-          </p>
+          <ReturnToDocumentation onClick={() => clear(true)} />
           <h5>Choose an endpoint</h5>
         </div>
       </ConsoleStyle>
     );
   }
 
+  const loadingApplications = apps.loading;
+  const loadingError = apps.error;
   return (
     <>
       <ConsoleStyle fullWidth={tryOutFullWidth} operation={operation} className="try-console-holder">
         <div className={'wrap-console'}>
-          <div className={'upper-part d-inline-block col-6'}>
-            <div className={'small-service-message ' + (show ? 'd-block ' : 'd-none ')}>
+          <div className={'upper-part d-inline-block col-6'} style={{ height: requestBodyHeight }}>
+            <div className={'small-service-message ' + (showCostWarning || show ? 'd-block ' : 'd-none ')}>
               <div
                 className={
                   'service-message alert alert-warning alert-dismissible fade show mt-2 mb-4 d-block col-6'
@@ -406,19 +464,13 @@ export function Console({ menu }) {
                   className="btn-close"
                   data-bs-dismiss="alert"
                   aria-label="Close"
-                  onClick={closeAction}
+                  onClick={closeAction} /* TODO clostCostWarning */
                 />
               </div>
             </div>
             <div className={'request-head'}>
-              <p
-                className={'navigation-page-right mb-50'}
-                style={{ cursor: 'pointer' }}
-                onClick={() => clear(true)}
-              >
-                SEE DOCUMENTATION
-              </p>
-              <h3 className={'oper-name mb-16'}>{operation.name}</h3>
+              <ReturnToDocumentation onClick={() => clear(true)} />
+              <h3 className={'operation-name mb-16'}>{operation.name}</h3>
               <h4 className={'mb-8'}>{operation.path}</h4>
               <p className={'mb-20'} dangerouslySetInnerHTML={{ __html: operation.description! }} />
               <label className={'col-form-label label-style'}>plan:</label>
@@ -433,14 +485,17 @@ export function Console({ menu }) {
                 <option value={'DEFAULT'} disabled>
                   Choose a plan
                 </option>
-                <ApplicationsAsOptions applications={applications?.applications} />
+                {loadingApplications ? <option disabled>Loading...</option> :
+                  loadingError ? <option disabled>Failed to load applications.</option> :
+                    applications ? <ApplicationsAsOptions applications={applications} /> :
+                      <option disabled>No applications found.</option>}
                 <UserKeysAsOptions userKeys={internalUserKeys} />
                 {userHasCCFeature ? <option value={'addNewKey'}>Add new key</option> : null}
               </select>
               <small className={'small-text d-block mb-20'}>
                 Select the plan you wish to query against or set a default plan{' '}
                 <a
-                  href={'/kycapi/console-v2'}
+                  href={'/kycapi/console-v2'} /*TODO KYC specific */
                   style={{ color: '#AFB0AF', textDecoration: 'underline' }}
                 >
                   here
@@ -454,7 +509,7 @@ export function Console({ menu }) {
                     style={{ color: '#005EFF', fontWeight: 600 }}
                     name="choose_mime_type"
                     id="choose_mime_type"
-                    onChange={(e) => {
+                    onChange={e => {
                       setPdfHeader(e.target.value === 'pdf');
                     }}
                   >
@@ -491,7 +546,7 @@ export function Console({ menu }) {
             )}
             <button
               id={`btn-${operation.operationId}-try-it`}
-              className={'btn btn-sm btn-primary' + (processing ? ' disabled' : '')}
+              className={'btn btn-sm btn-primary btn--primary' + (processing ? ' disabled' : '')}
               onClick={() => execute()}
             >
               Try it
@@ -503,26 +558,23 @@ export function Console({ menu }) {
               Clear
             </button>
           </div>
-          <div className={'whole-response d-inline-block col-6'}>
+          <div
+            className={'whole-response d-inline-block col-6'}
+            style={{ height: requestBodyHeight }}
+          >
             {processing && <Loading color={'#FFF'} />}
             {apiResponse && !processing && (
               <>
                 <div className={'text-part'}>
                   <p>Curl</p>
                   <div className={'console-code mb-3'}>
-                    <div
-                      className={'copy-icon pe-3'}
-                      onClick={() => copyCodeToClipboard(curlRequest, 1)}
-                    >
-                      <Tooltip
-                        title={
-                          ClipboardService.isSupported()
-                            ? 'Copied'
-                            : 'Not supported in your browser'
-                        }
-                        open={showTooltip}
-                      />
-                    </div>
+                    <CopyToClipboard onClick={() => copyCodeToClipboard(curlRequest, 1)} />
+                    <Tooltip
+                      title={
+                        ClipboardService.isSupported() ? 'Copied' : 'Not supported in your browser'
+                      }
+                      open={showTooltip}
+                    />
                     {curlRequest}
                   </div>
                   <p>Request url: {requestUrl}</p>
@@ -563,16 +615,14 @@ export function Console({ menu }) {
                 </div>
                 <div className={'response'}>
                   {apiResponse.html ? null : (
-                    <div
-                      className={'copy-icon pe-3'}
-                      onClick={() =>
-                        copyCodeToClipboard(
-                          apiResponse.json
-                            ? JSON.stringify(apiResponse.json, undefined, 2)
-                            : apiResponse.text,
-                          2,
-                        )
-                      }
+                    <CopyToClipboard
+                      onClick={() => {
+                        // noinspection TypeScriptUnresolvedReference
+                        const toCopy = apiResponse.json
+                          ? JSON.stringify(apiResponse.json, undefined, 2)
+                          : apiResponse.text;
+                        copyCodeToClipboard(toCopy, 2);
+                      }}
                     />
                   )}
                   <Tooltip

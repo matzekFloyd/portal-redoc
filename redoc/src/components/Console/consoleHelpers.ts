@@ -1,4 +1,4 @@
-import { ParameterValues } from "./types";
+import { ParameterValues } from './types';
 
 export const tryParse = (valueToParse: any) => {
   if (typeof valueToParse !== 'string') {
@@ -29,7 +29,16 @@ export const valuesWithoutOperationPrefix = (operationId, values) => {
   return valuesWithoutOperationPrefix;
 };
 
-export const getPathAndQuery = (originalPath, pathParams, queryParams, operationId) => {
+export const getPathAndQuery = (
+  originalPath: string,
+  pathParams:
+    | {
+    [parameterKey: string]: string;
+  }
+    | undefined,
+  queryParams: { [parameterKey: string]: string } | undefined,
+  operationId: string | undefined,
+) => {
   const pathParamsClone = Object.assign({}, valuesWithoutOperationPrefix(operationId, pathParams));
   const queryParamsClone = Object.assign(
     {},
@@ -45,9 +54,9 @@ export const getPathAndQuery = (originalPath, pathParams, queryParams, operation
     return encodeURIComponent(value);
   };
 
-  const path = originalPath.replace(/\{([^}]+)\}/g, replacer);
+  const path = originalPath.replace(/\{([^}]+)}/g, replacer);
 
-  let query = '';
+  let query: string | undefined;
 
   query = Object.entries(queryParamsClone)
     .filter(([_, value]: [string, string]) => value.trim() !== '')
@@ -64,7 +73,7 @@ export const getPathAndQuery = (originalPath, pathParams, queryParams, operation
  */
 export const filterByOperationId = (
   parameterValues: ParameterValues | {},
-  operationId: string
+  operationId: string,
 ): ParameterValues | {} => {
   const result = {};
   for (const type of Object.keys(parameterValues)) {
@@ -79,6 +88,7 @@ export const filterByOperationId = (
   return result;
 }
 
+//TODO this is KYC specific, should be handled differently
 export const getUrl = () => {
   if (
     location.hostname.includes('beta') ||
@@ -91,6 +101,16 @@ export const getUrl = () => {
   }
 };
 
+//TODO this is KYC specific, should be handled differently
 export const ENV = location.hostname.includes('localhost')
   ? `http://${location.hostname}:8085`
   : `//${location.hostname}`;
+
+//TODO this is EVA specific, should be handled differently
+/**
+ * Returns the URL based on the environment
+ */
+export const getEvaApiUrl = () => {
+  const currentHost = window.location.origin;
+  return `${currentHost}/eva/api`;
+};

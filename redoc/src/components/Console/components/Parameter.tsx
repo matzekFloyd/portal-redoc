@@ -2,6 +2,11 @@ import * as React from 'react';
 import { FieldModel } from '../../../services';
 import { ParameterType } from '../types';
 
+/**
+ *
+ * @param props
+ * @constructor
+ */
 export function Parameter(props: {
   parameter: FieldModel;
   setParameter: (type: ParameterType | undefined, name, value) => void;
@@ -23,7 +28,7 @@ export function Parameter(props: {
           className={'form-select form-select-sm style-input'}
           name={'select-boolean'}
           defaultValue={''}
-          onChange={(ev) => setParameter(parameter.in, parameter.name, ev.target.value)}
+          onChange={ev => setParameter(parameter.in, parameter.name, ev.target.value)}
         >
           <option value={''} disabled={parameter.required}>
             --
@@ -45,7 +50,7 @@ export function Parameter(props: {
           className={'form-select form-select-sm style-input'}
           name={'select-boolean'}
           defaultValue={''}
-          onChange={(ev) => setParameter(parameter.in, parameter.name, ev.target.value)}
+          onChange={ev => setParameter(parameter.in, parameter.name, ev.target.value)}
         >
           <option value={''} disabled={parameter.required}>
             --
@@ -74,7 +79,7 @@ export function Parameter(props: {
           name={parameter.name}
           value={paramByOperation(parameter.in, parameter.name)}
           required={parameter.required}
-          onChange={(ev) => setParameter(parameter.in, parameter.name, ev.target.value)}
+          onChange={ev => setParameter(parameter.in, parameter.name, ev.target.value)}
         />
         <small className={'small-text'}>{parameter.description}</small>
       </li>

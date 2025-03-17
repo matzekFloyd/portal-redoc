@@ -1,28 +1,56 @@
-import * as React from 'react';
-import {useContext} from 'react';
-import {ConsoleContext, ConsoleContextObject} from './ConsoleContext';
+import * as React from "react";
+import { useContext } from "react";
+import { ConsoleContext, ConsoleContextObject } from "./ConsoleContext";
+import styled from "../../styled-components";
 
+const ButtonStyled = styled.div<ConsoleToggleProps>`
+  background-color: ${(props) => props.theme.colors.primary.main};
+  border: 2px solid #3d7bdc;
+  box-sizing: border-box;
+  border-radius: 30px;
+  box-shadow: none;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 17px;
+  letter-spacing: 0.1em;
+  color: #ffffff;
+  text-transform: uppercase;
+  padding: 10px 15px;
+  margin-top: 10px;
+  cursor: pointer;
+  max-width: 225px;
+  text-align: center;
 
-export function ConsoleToggle({operation}) {
+  &:hover,
+  &:active,
+  &:focus {
+    background-color: ${(props) => props.theme.colors.primary.dark};
+    border: 2px solid ${(props) => props.theme.colors.primary.dark};
+    color: #ffffff;
+  }
+`;
+
+export interface ConsoleToggleProps {
+  operation?: boolean;
+}
+
+/**
+ *
+ * @param props
+ * @constructor
+ */
+export function ConsoleToggle(props: ConsoleToggleProps) {
+  const { operation } = props;
   const context = useContext(ConsoleContext) as ConsoleContextObject;
-  const style = {
-    backgroundColor: '#0A1264',
-    border: '2px solid #0A1264',
-    boxSizing: 'border-box',
-    borderRadius: '30px',
-    borderWidth: '0',
-    boxShadow: 'none',
-    fontStyle: 'normal',
-    fontWeight: 500,
-    fontSize: '14px',
-    lineHeight: '17px',
-    letterSpacing: '0.1em',
-    color: '#FFFFFF',
-    textTransform: 'uppercase',
-    padding: '10px 15px',
-    marginTop: '10px'
+
+  const toggleConsole = () => {
+    context.toggleConsole(operation);
   };
-  // @ts-ignore
-  return <button className={"open-console btn btn-sm btn-primary btn-custom"} style={style}
-                 onClick={() => context.toggleConsole(operation)}>Try it in our console</button>;
+
+  return (
+    <>
+      <ButtonStyled onClick={() => toggleConsole()}>Try it in our console</ButtonStyled>
+    </>
+  );
 }
