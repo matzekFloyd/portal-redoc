@@ -1,4 +1,4 @@
-import * as DOMPurify from 'dompurify';
+const DOMPurify = require('dompurify');
 import * as React from 'react';
 
 import { OptionsConsumer } from '../OptionsProvider';

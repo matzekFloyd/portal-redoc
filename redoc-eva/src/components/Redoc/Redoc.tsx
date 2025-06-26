@@ -5,17 +5,17 @@ import { ThemeProvider } from '../../styled-components';
 import { OptionsProvider } from '../OptionsProvider';
 
 import { AppStore } from '../../services';
-import { ApiInfo } from '../ApiInfo/';
+import { ApiInfo } from '../ApiInfo';
 import { ApiLogo } from '../ApiLogo/ApiLogo';
 import { ContentItems } from '../ContentItems/ContentItems';
 import { SideMenu } from '../SideMenu/SideMenu';
 import { StickyResponsiveSidebar } from '../StickySidebar/StickyResponsiveSidebar';
 import { ApiContentWrap, BackgroundStub, RedocWrap } from './styled.elements';
 
+import { Console } from '../Console/Console';
+import { ConsoleWrapper } from '../Console/ConsoleWrapper';
 import { SearchBox } from '../SearchBox/SearchBox';
 import { StoreProvider } from '../StoreBuilder';
-import { ConsoleWrapper } from '../Console/ConsoleWrapper';
-import { Console } from '../Console/Console';
 
 export interface RedocProps {
   store: AppStore;

@@ -3,7 +3,7 @@
 import { shallow } from 'enzyme';
 import * as React from 'react';
 
-import { OneOfSchema, Schema } from '../';
+import { OneOfSchema, Schema } from '..';
 import { OpenAPIParser, SchemaModel } from '../../services';
 import { RedocNormalizedOptions } from '../../services/RedocNormalizedOptions';
 import { withTheme } from '../testProviders';

@@ -1,4 +1,4 @@
-import { headerCommonMixin, linkifyMixin } from '../../common-elements';
+import { headerCommonMixin } from '../../common-elements/headers';
 import { PrismDiv } from '../../common-elements/PrismDiv';
 import styled, { css, extensionsHook, ResolvedThemeInterface } from '../../styled-components';
 
@@ -160,9 +160,10 @@ export const StyledMarkdownBlock = styled(
     font-weight: bold;
   }
 
-  ${linkifyMixin('.share-link')};
-
   ${linksCss}
 
   ${extensionsHook('Markdown')};
 `;
+
+// TODO: EVA-1395 Bring back if needed, it was causing errors
+// ${linkifyMixin('.share-link')};

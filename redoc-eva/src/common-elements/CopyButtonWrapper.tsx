@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Tooltip } from '../common-elements/Tooltip';
+import { Tooltip } from './Tooltip';
 
 import { ClipboardService } from '../services/ClipboardService';
 

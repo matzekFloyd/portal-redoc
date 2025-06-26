@@ -1,24 +1,24 @@
 import { observer } from 'mobx-react';
 import * as React from 'react';
 
+import { ShelfIcon } from '../../common-elements';
 import {
-  ClickablePropertyNameCell,
-  PropertyLabel,
-  RequiredLabel,
+    ClickablePropertyNameCell,
+    PropertyLabel,
+    RequiredLabel,
 } from '../../common-elements/fields';
-import { FieldDetails } from './FieldDetails';
 import {
-  InnerPropertiesWrap,
-  PropertyBullet,
-  PropertyCellWithInner,
-  PropertyDetailsCell,
-  PropertyNameCell,
+    InnerPropertiesWrap,
+    PropertyBullet,
+    PropertyCellWithInner,
+    PropertyDetailsCell,
+    PropertyNameCell,
 } from '../../common-elements/fields-layout';
-import { ShelfIcon } from '../../common-elements/';
 import { Schema } from '../Schema/Schema';
+import { FieldDetails } from './FieldDetails';
 
-import type { SchemaOptions } from '../Schema/Schema';
 import type { FieldModel } from '../../services/models';
+import type { SchemaOptions } from '../Schema/Schema';
 
 export interface FieldProps extends SchemaOptions {
   className?: string;
