@@ -1,12 +1,12 @@
 /* tslint:disable:no-implicit-dependencies */
 import { mount } from 'enzyme';
-import * as React from 'react';
 import * as yaml from 'js-yaml';
+import * as React from 'react';
 
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
-import { Loading, RedocStandalone } from '../components/';
+import { Loading, RedocStandalone } from '../components';
 
 describe('Components', () => {
   describe('RedocStandalone', () => {

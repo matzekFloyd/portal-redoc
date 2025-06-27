@@ -7,7 +7,7 @@ import * as React from 'react';
 
 import { filterPropsDeep } from '../../utils/test-utils';
 
-import { ObjectSchema, Schema } from '../';
+import { ObjectSchema, Schema } from '..';
 import { OpenAPIParser, SchemaModel } from '../../services';
 import { RedocNormalizedOptions } from '../../services/RedocNormalizedOptions';
 import * as simpleDiscriminatorFixture from './fixtures/simple-discriminator.json';

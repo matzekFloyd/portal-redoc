@@ -6,18 +6,12 @@ export default styled.div<ConsoleStyleProps>`
   width: ${props => `calc(100% - ${props.theme.sidebar.width})`};
   position: fixed;
   top: 0;
-  right: 2px;
+  right: 0;
   bottom: 0;
   background: ${props => props.theme.rightPanel.backgroundColor};
   z-index: 20;
   color: ${props => props.theme.rightPanel.textColor};
   display: ${props => (props.fullWidth ? 'flex' : 'block')};
-
-  & > :first-child {
-    padding-right: 1em;
-    margin-right: 1em;
-    flex-grow: 1;
-  }
 
   .alert {
     position: relative;
@@ -47,12 +41,6 @@ export default styled.div<ConsoleStyleProps>`
     border-color: ${(props) => props.theme.colors.warning.light};
   }
 
-  .btn {
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    cursor: pointer;
-  }
-
   .btn-close {
     box-sizing: content-box;
     width: 1em;
@@ -64,50 +52,6 @@ export default styled.div<ConsoleStyleProps>`
     border-radius: 0.375rem;
     opacity: 0.5;
     cursor: pointer;
-  }
-
-  .btn:disabled,
-  .btn.disabled,
-  fieldset:disabled .btn {
-    pointer-events: none;
-    cursor: not-allowed;
-    opacity: 0.65;
-    box-shadow: none;
-  }
-
-  .btn--primary {
-    background-color: ${(props) => props.theme.colors.primary.main};
-    border: 1px solid ${(props) => props.theme.colors.primary.main};
-    color: #ffffff;
-  }
-
-  .btn--primary:hover,
-  .btn--primary:active,
-  .btn--primary:focus {
-    background-color: ${(props) => props.theme.colors.primary.dark};
-    border: 1px solid ${(props) => props.theme.colors.primary.dark};
-    color: #ffffff;
-  }
-
-  .btn--white {
-    background-color: #ffffff;
-    border: 1px solid #63666a;
-    color: #63666a;
-  }
-
-  .btn--white:hover,
-  .btn--white:active,
-  .btn--white:focus {
-    background-color: #ffffff;
-    border: 1px solid #373a36;
-    color: #373a36;
-  }
-
-  .btn-sm,
-  .btn-group-sm > .btn {
-    padding: 0.25rem 34px;
-    font-size: 0.875rem;
-    border-radius: 50rem;
   }
 
   .col-6 {
@@ -155,6 +99,8 @@ export default styled.div<ConsoleStyleProps>`
     cursor: pointer;
     width: 24px;
     height: 24px;
+    margin-top: 0.5rem;
+    margin-right: 0.5rem;
   }
 
   .d-block {
@@ -237,10 +183,6 @@ export default styled.div<ConsoleStyleProps>`
     margin-bottom: 8px;
   }
 
-  .mb-16 {
-    margin-bottom: 16px;
-  }
-
   .mb-20 {
     margin-bottom: 20px;
   }
@@ -249,33 +191,35 @@ export default styled.div<ConsoleStyleProps>`
     margin-bottom: 50px;
   }
 
-  .me-2 {
-    margin-right: 0.5rem;
-  }
-
-  .ms-2 {
-    margin-left: 0.5rem;
-  }
-
   .mt-2 {
     margin-top: 0.5rem;
   }
 
-  .navigation-page-right {
-    font-size: 0.75rem;
-    line-height: 12px;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    position: relative;
-    display: inline-block;
-    color: #373a36;
-    cursor: pointer;
+  .return-to-documentation {
+      display: flex;
+      flex-direction: column;
+      align-items: start;
+      margin-bottom: 50px;
+  }
+
+  .return-to-documentation-action {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      cursor: pointer;
+      font-size: 15px;
+      color: ${(props) => props.theme.colors.text.primary};
+  }
+
+  .return-to-documentation-icon {
+    rotate: 180deg;
   }
 
   .operation-name {
     color: ${(props) => props.theme.colors.primary.main};
     font-size: 20px;
     font-weight: 700;
+    margin-bottom: 16px;
   }
 
   .overflow {
@@ -308,6 +252,8 @@ export default styled.div<ConsoleStyleProps>`
     position: absolute;
     top: 0;
     left: 0;
+    border-radius: 0;
+    z-index: 2;
     margin-top: 0 !important;
   }
 
@@ -317,6 +263,10 @@ export default styled.div<ConsoleStyleProps>`
     padding: 40px 60px;
     overflow-x: hidden;
     overflow-y: auto;
+  }
+
+  .upper-part--fixed-message {
+      padding-top: 65px;
   }
 
   .whole-response {
@@ -353,7 +303,10 @@ export default styled.div<ConsoleStyleProps>`
     padding: 7px;
   }
 
-  .vertical-align-middle {
-    vertical-align: middle;
+  .request-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
   }
 `;

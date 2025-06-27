@@ -87,11 +87,3 @@ export const filterByOperationId = (
   }
   return result;
 };
-
-/**
- * Returns the URL based on the environment
- */
-export const getEvaApiUrl = () => {
-  const currentHost = window.location.origin;
-  return `${currentHost}/eva/api`;
-};

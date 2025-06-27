@@ -3,7 +3,7 @@
 import { mount, ReactWrapper } from 'enzyme';
 import * as React from 'react';
 
-import { JsonViewer } from '../';
+import { JsonViewer } from '..';
 import { withTheme } from '../testProviders';
 
 import { ClipboardService } from '../../services/ClipboardService';

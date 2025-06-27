@@ -1,18 +1,18 @@
+import { configure } from 'mobx';
 import * as React from 'react';
 import { createRoot, hydrateRoot } from 'react-dom/client';
-import { configure } from 'mobx';
 
-import { Redoc, RedocStandalone } from './components/';
+import { Redoc, RedocStandalone } from './components';
+import type { StoreState } from './services';
 import { AppStore } from './services/AppStore';
 import { debugTime, debugTimeEnd } from './utils/debug';
 import { querySelector } from './utils/dom';
-import type { StoreState } from './services';
 
 configure({
   useProxies: 'ifavailable',
 });
 
-export { Redoc, AppStore } from '.';
+export { AppStore, Redoc } from '.';
 
 export const version = __REDOC_VERSION__;
 export const revision = __REDOC_REVISION__;

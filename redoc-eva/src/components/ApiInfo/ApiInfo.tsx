@@ -3,18 +3,18 @@ import * as React from 'react';
 
 import { AppStore } from '../../services/AppStore';
 
-import { MiddlePanel, Row, Section } from '../../common-elements/';
+import { MiddlePanel, Row, Section } from '../../common-elements';
+import { l } from '../../services/Labels';
 import { ExternalDocumentation } from '../ExternalDocumentation/ExternalDocumentation';
 import { Markdown } from '../Markdown/Markdown';
 import { StyledMarkdownBlock } from '../Markdown/styled.elements';
 import {
-  ApiHeader,
-  DownloadButton,
-  InfoSpan,
-  InfoSpanBox,
-  InfoSpanBoxWrap,
+    ApiHeader,
+    DownloadButton,
+    InfoSpan,
+    InfoSpanBox,
+    InfoSpanBoxWrap,
 } from './styled.elements';
-import { l } from '../../services/Labels';
 
 export interface ApiInfoProps {
   store: AppStore;

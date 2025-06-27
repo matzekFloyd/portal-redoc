@@ -1,29 +1,29 @@
-import * as React from 'react';
 import { observer } from 'mobx-react';
+import * as React from 'react';
 
 import {
-  RecursiveLabel,
-  TypeFormat,
-  TypeName,
-  TypePrefix,
-  TypeTitle,
+    RecursiveLabel,
+    TypeFormat,
+    TypeName,
+    TypePrefix,
+    TypeTitle,
 } from '../../common-elements/fields';
 import { getSerializedValue, isObject } from '../../utils';
 import { ExternalDocumentation } from '../ExternalDocumentation/ExternalDocumentation';
 import { Markdown } from '../Markdown/Markdown';
 import { EnumValues } from './EnumValues';
+import { Examples } from './Examples';
 import { Extensions } from './Extensions';
 import { FieldProps } from './Field';
-import { Examples } from './Examples';
 import { ConstraintsView } from './FieldConstraints';
 import { FieldDetail } from './FieldDetail';
 
-import { Badge } from '../../common-elements/';
+import { Badge } from '../../common-elements';
 
 import { l } from '../../services/Labels';
 import { OptionsContext } from '../OptionsProvider';
-import { Pattern } from './Pattern';
 import { ArrayItemDetails } from './ArrayItemDetails';
+import { Pattern } from './Pattern';
 
 export const FieldDetailsComponent = observer((props: FieldProps) => {
   const { enumSkipQuotes, hideSchemaTitles } = React.useContext(OptionsContext);

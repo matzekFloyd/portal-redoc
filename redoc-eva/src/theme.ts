@@ -40,9 +40,10 @@ const defaultTheme: ThemeInterface = {
     gray: {
       50: '#FAFAFA',
       100: '#F5F5F5',
+      200: '#CFD8DC',
     },
     text: {
-      primary: '#333333',
+      primary: '#37474F',
       secondary: ({ colors }) => lighten(colors.tonalOffset, colors.text.primary),
     },
     border: {
@@ -107,7 +108,7 @@ const defaultTheme: ThemeInterface = {
     fontWeightRegular: '400',
     fontWeightBold: '600',
     fontWeightLight: '300',
-    fontFamily: 'Roboto, sans-serif',
+    fontFamily: 'GT America, Roboto, sans-serif',
     smoothing: 'antialiased',
     optimizeSpeed: true,
     headings: {
@@ -270,6 +271,7 @@ export interface ResolvedThemeInterface {
     gray: {
       50: string;
       100: string;
+      200: string;
     };
     border: {
       light: string;

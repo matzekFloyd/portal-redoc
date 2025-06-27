@@ -1,5 +1,5 @@
 import * as CopyWebpackPlugin from 'copy-webpack-plugin';
-import ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 import * as HtmlWebpackPlugin from 'html-webpack-plugin';
 import { resolve } from 'path';
 import * as webpack from 'webpack';
@@ -41,6 +41,11 @@ export default (env: { playground?: boolean; bench?: boolean } = {}) => ({
     hot: true,
     historyApiFallback: true,
     open: true,
+    client: {
+      webSocketURL: {
+        port: 9091, // External Docker port
+      },
+    },
   },
   stats: {
     children: true,

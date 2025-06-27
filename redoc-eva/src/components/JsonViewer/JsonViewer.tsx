@@ -1,7 +1,7 @@
 import * as React from 'react';
 import styled from '../../styled-components';
 
-import { SampleControls } from '../../common-elements';
+import { SampleControls } from '../../common-elements/samples';
 import { CopyButtonWrapper } from '../../common-elements/CopyButtonWrapper';
 import { PrismDiv } from '../../common-elements/PrismDiv';
 import { jsonToHTML } from '../../utils/jsonToHtml';

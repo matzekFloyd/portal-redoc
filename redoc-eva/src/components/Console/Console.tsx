@@ -15,19 +15,17 @@ import { Loading } from '../Loading/Loading';
 import ConsoleStyle from './components/ConsoleStyle';
 import {
   getPathAndQuery,
-  getEvaApiUrl,
   tryParse,
   valuesWithoutOperationPrefix,
   filterByOperationId,
 } from './consoleHelpers';
-import { ApplicationsAsOptions } from './components/ApplicationsAsOptions';
 import { RequestBodyFields } from './components/RequestBodyFields';
 import { Parameter } from './components/Parameter';
-import { ApplicationFields, ParameterType, ParameterValues } from "./types";
-
+import { ParameterType, ParameterValues } from "./types";
+import { ButtonStyled } from "./components/ButtonStyled";
 import { CopyToClipboard } from './components/CopyToClipboard';
 import { ReturnToDocumentation } from './components/ReturnToDocumentation';
-import { useFetch } from '../../utils/fetch';
+import { RedocFromParentMessage, useParentMessage } from "./useParentMessage";
 
 export interface ConsoleStyleProps {
   fullWidth?: boolean;
@@ -46,7 +44,11 @@ export interface ConsoleProps extends ConsoleStyleProps {
  */
 export function Console(props: ConsoleProps) {
   const { menu, spec } = props;
-  const apps = useFetch<ApplicationFields[]>(`/account/applications`);
+  const [apiKeys, setApiKeys] = useState<RedocFromParentMessage['apiKeys']>({
+      loading: false,
+      error: "",
+      options: [],
+  });
   const context = useContext(ConsoleContext) as ConsoleContextObject;
   const tryOutFullWidth = true;
   const [processing, setProcessing] = useState(false);
@@ -55,6 +57,7 @@ export function Console(props: ConsoleProps) {
     html?: string;
     json?: string;
   } | null>(null);
+  const [baseRequestUrl, setBaseRequestUrl] = useState('');
   const [requestUrl, setRequestUrl] = useState('');
   const [responseCode, setResponseCode] = useState();
   const [requestHeaders, setRequestHeaders] = useState([] as any);
@@ -71,7 +74,6 @@ export function Console(props: ConsoleProps) {
   const [showCostWarning, setShowCostWarning] = useState(false);
   const [mimeTypes, setMimeTypes] = useState<string[]>([]);
   const [pdfHeader, setPdfHeader] = useState(false);
-  const [applications, setApplications] = useState<ApplicationFields[]>();
 
   useEffect(() => {
     setRequestBodyHeightDimension();
@@ -81,6 +83,14 @@ export function Console(props: ConsoleProps) {
     window.addEventListener('resize', setRequestBodyHeightDimension);
     return () => window.removeEventListener('resize', setRequestBodyHeightDimension);
   }, []);
+
+  useParentMessage<RedocFromParentMessage>("portal.data", (data) => {
+      const { baseApiUrl, apiKeys } = data;
+      if (baseApiUrl) {
+          setBaseRequestUrl(baseApiUrl);
+      }
+      setApiKeys(apiKeys);
+  });
 
   useEffect(() => {
     // noinspection TypeScriptValidateTypes
@@ -106,12 +116,6 @@ export function Console(props: ConsoleProps) {
     });
     return () => unsubscribe();
   }, [menu]);
-
-  useEffect(() => {
-    if (apps.data) {
-      setApplications(apps.data as ApplicationFields[]);
-    }
-  }, [apps.data]);
 
   const setParameter = (type: ParameterType, name, value) => {
     const newValues = {
@@ -161,10 +165,8 @@ export function Console(props: ConsoleProps) {
       updateState(input);
     }
 
-    const baseUrl = getEvaApiUrl();
-
     const requestURL = getPathAndQuery(
-      `${baseUrl}${operation.path}`,
+      `${baseRequestUrl}${operation.path}`,
       (parameterValues as ParameterValues).path,
       (parameterValues as ParameterValues).query,
       operation.operationId,
@@ -371,13 +373,14 @@ export function Console(props: ConsoleProps) {
     );
   }
 
-  const loadingApplications = apps.loading;
-  const loadingError = apps.error;
   return (
     <>
       <ConsoleStyle fullWidth={tryOutFullWidth} operation={operation}>
         <div className={'wrap-console'}>
-          <div className={'upper-part d-inline-block col-6'} style={{ height: requestBodyHeight }}>
+          <div
+              className={'upper-part d-inline-block col-6' + (showCostWarning ? ' upper-part--fixed-message' : '')}
+              style={{ height: requestBodyHeight }}
+          >
             <div className={'small-service-message ' + (showCostWarning ? 'd-block ' : 'd-none ')}>
               <div
                 className={
@@ -396,7 +399,7 @@ export function Console(props: ConsoleProps) {
             </div>
             <div className={'request-head'}>
               <ReturnToDocumentation onClick={() => clear(true)} />
-              <h3 className={'operation-name mb-16'}>{operation.name}</h3>
+              <h3 className={'operation-name'}>{operation.name}</h3>
               <h4 className={'mb-8'}>{operation.path}</h4>
               <p className={'mb-20'} dangerouslySetInnerHTML={{ __html: operation.description! }} />
               <label className={'col-form-label label-style'}>plan:</label>
@@ -408,13 +411,11 @@ export function Console(props: ConsoleProps) {
                 defaultValue={userAppKey ? userAppKey : 'DEFAULT'}
                 onChange={handleChange}
               >
-                <option value={'DEFAULT'} disabled>
-                  Choose a plan
-                </option>
-                {loadingApplications ? <option disabled>Loading...</option> :
-                  loadingError ? <option disabled>Failed to load applications.</option> :
-                    applications ? <ApplicationsAsOptions applications={applications} /> :
-                      <option disabled>No applications found.</option>}
+                {apiKeys.loading ? <option disabled>Loading...</option> :
+                  apiKeys.error ? <option disabled>{apiKeys.error}</option> :
+                    apiKeys.options.map((apiKey, index) => (
+                      <option key={index} value={apiKey.value} disabled={!!apiKey.disabled}>{apiKey.label}</option>
+                    ))}
               </select>
               <small className={'small-text d-block mb-20'}>
                 Select the plan you wish to query against
@@ -443,6 +444,7 @@ export function Console(props: ConsoleProps) {
                 {operation.parameters.map((parameter, _index) => {
                   return (
                     <Parameter
+                      key={`${parameter.name}-${_index}`}
                       parameter={parameter}
                       setParameter={setParameter}
                       paramByOperation={paramByOperation}
@@ -461,19 +463,22 @@ export function Console(props: ConsoleProps) {
                 />
               </div>
             )}
-            <button
-              id={`btn-${operation.operationId}-try-it`}
-              className={'btn btn-sm btn--primary' + (processing ? ' disabled' : '')}
-              onClick={() => execute()}
-            >
-              Try it
-            </button>
-            <button
-              className={'btn btn-sm btn--white ms-2' + (processing ? ' disabled' : '')}
-              onClick={() => clear()}
-            >
-              Clear
-            </button>
+            <div className={'request-actions'}>
+                <ButtonStyled
+                    id={`btn-${operation.operationId}-try-it`}
+                    variant={"primary"}
+                    onClick={() => execute()}
+                    disabled={processing || !baseRequestUrl}
+                >
+                    Try it
+                </ButtonStyled>
+                <ButtonStyled
+                    variant={"secondary"}
+                    onClick={() => clear()}
+                >
+                    Clear query
+                </ButtonStyled>
+            </div>
           </div>
           <div
             className={'whole-response d-inline-block col-6'}

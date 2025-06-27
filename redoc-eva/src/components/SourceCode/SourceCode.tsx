@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { highlight } from '../../utils';
 
-import { SampleControls, SampleControlsWrap, StyledPre } from '../../common-elements';
+import { SampleControls, SampleControlsWrap, StyledPre } from '../../common-elements/samples';
 import { CopyButtonWrapper } from '../../common-elements/CopyButtonWrapper';
 
 export interface SourceCodeProps {

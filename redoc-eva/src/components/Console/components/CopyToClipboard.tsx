@@ -15,7 +15,7 @@ type CopyToClipboardProps = {
 export function CopyToClipboard(props: CopyToClipboardProps) {
   const { height, width, viewBox, onClick } = props;
   return (
-    <div className="copy-icon me-2 mt-2">
+    <div className="copy-icon">
       <svg
         fill="none"
         height={height ? height : '24'}

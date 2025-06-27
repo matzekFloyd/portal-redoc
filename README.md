@@ -3,7 +3,7 @@
 ## KYC Portal
 - Navigate to the KYC redoc directory: `cd redoc-kyc`
 - Install dependencies: `npm install`
-- Bundle redoc: `npm bundle:standalone`
+- Bundle redoc: `npm run bundle:standalone`
   - In case of ``Error: error:0308010C:digital envelope routines::unsupported``: Switch to an older node version using nvm: `nvm use 16`. This should resolve the issue.
 - The bundled redoc is now created and added to `redoc-kyc/bundles/redoc.standalone.js`
 - To test the bundled redoc file, open the `redoc-kyc/index.html` file in your browser
@@ -11,7 +11,7 @@
 ## EVA Portal
 - Navigate to the EVA redoc directory: `cd redoc-eva`
 - Install dependencies: `npm install`
-- Bundle redoc: `npm bundle:standalone`
+- Bundle redoc: `npm run bundle:standalone`
 - The bundled redoc is now created and added to `redoc-eva/bundles/redoc.standalone.js`
 - To test the bundled redoc file, open the `redoc-eva/index.html` file in your browser
 
@@ -20,6 +20,7 @@
   - KYC Redoc:
     - Requires bootstrap classes for some styled components to look as expected
     - Requires fetching of applications and api keys in a specific shape from a specific KYC url
+    - Has [hardcoded](kwf-repo/redoc/src/components/ApiInfo/ApiInfo.tsx:33) option to hide Download API spec button
   - EVA Redoc:
     - Does not require bootstrap classes, however it is styled differently than KYC redoc
     - Requires fetching of applications and api keys in a specific shape from a specific EVA url
